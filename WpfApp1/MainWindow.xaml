@@ -8,7 +8,7 @@
         Title="MainWindow" Height="500" Width="500">
     <Grid>
         <Border BorderThickness="1" BorderBrush="Black" Height="400" Width="400">
-            <Canvas x:Name="CanvasElement" Height="400" Width="400"/>
+            <Canvas x:Name="CanvasElement" Height="400" Width="400" MouseDown="Canvas_MouseDown"/>
         </Border>
     </Grid>
 </Window>

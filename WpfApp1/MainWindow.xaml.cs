@@ -26,43 +26,79 @@ namespace WpfApp1
     {
         BoardState Board { get; set; }
 
+        BasePiece ClickedPiece { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
             InitBoardState();
-            //DrawBoard();
+            DrawBoard();
             DrawPieces();
+        }
 
+        void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var clickedPoint = Mouse.GetPosition(CanvasElement);
 
+            var x = (int)(clickedPoint.X * 8 / CanvasElement.Width);
+            var y = (int)(clickedPoint.Y * 8 / CanvasElement.Height);
 
+            if (ClickedPiece == null)
+            {
+                ClickedPiece = Board.Squares[y, x].CurrentPiece;
+            }
+            else
+            {
+                var moves = ClickedPiece.GetAllowedMoves(Board).ToArray();
+
+                if (moves.Any(_ => _[0] == y && _[1] == x))
+                {
+                    ClickedPiece.AlreadyMoved = true;
+                    var location = Board.GetPieceLocation(ClickedPiece);
+
+                    Board.Squares[y, x].CurrentPiece = ClickedPiece;
+                    Board.Squares[location.y, location.x].CurrentPiece = null;
+                }
+
+                ClickedPiece = null;
+            }
+
+            DrawBoard();
+            DrawPieces();
         }
 
         void InitBoardState()
         {
             Board = new BoardState();
-
-            Board.Squares[0, 0] = new Rook()
         }
 
         void DrawPieces()
         {
-            var imagesBasePath = ConfigurationManager.AppSettings["ImagesBasePath"];
-
-            var sadf = , "black_bishop.png"));
-
-            Func<string, Image> getImagePath = (string imageName) =>
+            Func<BitmapImage, Image> getImage = (BitmapImage image) =>
             new Image()
             {
                 Width = CanvasElement.Width / 8,
                 Height = CanvasElement.Height / 8,
-                Source = new BitmapImage(new Uri(Path.Combine(imagesBasePath, imageName)))
+                Source = image
             };
 
+            var unit = (int)CanvasElement.Height / 8;
 
+            for (var i = 0; i < 8; i++)
+            {
+                for (var j = 0; j < 8; j++)
+                {
+                    if (Board.Squares[i, j].CurrentPiece == null)
+                        continue;
 
-            Canvas.SetTop(i, 10);
-            Canvas.SetLeft(i, 10);
-            CanvasElement.Children.Add(i);
+                    var pieceImage = getImage(Board.Squares[i, j].CurrentPiece.Image);
+
+                    Canvas.SetTop(pieceImage, i * unit);
+                    Canvas.SetLeft(pieceImage, j * unit);
+
+                    CanvasElement.Children.Add(pieceImage);
+                }
+            }
         }
 
         void DrawBoard()
@@ -78,7 +114,7 @@ namespace WpfApp1
                 {
                     var square = new Rectangle()
                     {
-                        Fill = new SolidColorBrush((i + j) % 2 == 0 ? Colors.Black : Colors.White),
+                        Fill = new SolidColorBrush((i + j) % 2 == 0 ? Colors.Brown : Colors.White),
                         Width = (int)CanvasElement.Height / 8,
                         Height = (int)CanvasElement.Height / 8
                     };
@@ -89,7 +125,6 @@ namespace WpfApp1
                     CanvasElement.Children.Add(square);
                 }
             }
-
         }
     }
 }
