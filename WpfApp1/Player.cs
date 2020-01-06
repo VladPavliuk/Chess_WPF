@@ -1,4 +1,4 @@
-﻿namespace WpfApp1
+﻿namespace ChessWpf
 {
     public enum Player
     {

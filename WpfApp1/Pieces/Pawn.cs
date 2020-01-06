@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace WpfApp1.Pieces
+namespace ChessWpf.Pieces
 {
     public class Pawn : BasePiece
     {

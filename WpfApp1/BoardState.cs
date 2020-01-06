@@ -1,7 +1,7 @@
 ﻿using System;
-using WpfApp1.Pieces;
+using ChessWpf.Pieces;
 
-namespace WpfApp1
+namespace ChessWpf
 {
     public class BoardState
     {

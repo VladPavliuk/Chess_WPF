@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Media.Imaging;
 
-namespace WpfApp1.Pieces
+namespace ChessWpf.Pieces
 {
     public abstract class BasePiece
     {
