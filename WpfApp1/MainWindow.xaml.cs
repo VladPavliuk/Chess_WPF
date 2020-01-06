@@ -1,21 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WpfApp1.Pieces;
-using Path = System.IO.Path;
 
 namespace WpfApp1
 {
@@ -24,9 +15,9 @@ namespace WpfApp1
     /// </summary>
     public partial class MainWindow : Window
     {
-        BoardState Board { get; set; }
+        private BoardState Board { get; set; }
 
-        BasePiece ClickedPiece { get; set; }
+        private BasePiece ClickedPiece { get; set; }
 
         public MainWindow()
         {
@@ -36,7 +27,7 @@ namespace WpfApp1
             DrawPieces();
         }
 
-        void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             var clickedPoint = Mouse.GetPosition(CanvasElement);
 
@@ -67,12 +58,12 @@ namespace WpfApp1
             DrawPieces();
         }
 
-        void InitBoardState()
+        private void InitBoardState()
         {
             Board = new BoardState();
         }
 
-        void DrawPieces()
+        private void DrawPieces()
         {
             Func<BitmapImage, Image> getImage = (BitmapImage image) =>
             new Image()
@@ -89,7 +80,9 @@ namespace WpfApp1
                 for (var j = 0; j < 8; j++)
                 {
                     if (Board.Squares[i, j].CurrentPiece == null)
+                    {
                         continue;
+                    }
 
                     var pieceImage = getImage(Board.Squares[i, j].CurrentPiece.Image);
 
@@ -101,10 +94,12 @@ namespace WpfApp1
             }
         }
 
-        void DrawBoard()
+        private void DrawBoard()
         {
             if (CanvasElement.Height != CanvasElement.Width || CanvasElement.Height % 8 != 0)
+            {
                 throw new Exception("Wrong canvas size!");
+            }
 
             var unit = (int)CanvasElement.Height / 8;
 

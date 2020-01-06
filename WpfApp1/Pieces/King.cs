@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace WpfApp1.Pieces
@@ -24,7 +23,9 @@ namespace WpfApp1.Pieces
                 for (int j = -1; j < 2; j++)
                 {
                     if (j == 0 && i == 0)
+                    {
                         continue;
+                    }
 
                     var y = pieceLocation.y + i;
                     var x = pieceLocation.x + j;

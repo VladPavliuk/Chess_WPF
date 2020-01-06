@@ -56,7 +56,9 @@ namespace WpfApp1.Pieces
                 var x = locationsToFilter[i][1];
 
                 if (x >= 8 || x < 0 || y >= 8 || y < 0)
+                {
                     continue;
+                }
 
                 if (board.Squares[y, x].CurrentPiece == null
                     || (board.Squares[y, x].CurrentPiece.ControlledBy != ControlledBy && !(board.Squares[y, x].CurrentPiece is King)))
