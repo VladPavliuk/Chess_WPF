@@ -13,7 +13,7 @@ namespace ChessWpf.Pieces
 
         public override string ImageName => "pawn";
 
-        public override int[][] GetAllowedMoves(BoardState board)
+        public override List<(int y, int x)> GetAllowedMoves(BoardState board)
         {
             var pieceLocation = board.GetPieceLocation(this);
             var allowedMoves = new List<(int y, int x)>();
@@ -24,7 +24,9 @@ namespace ChessWpf.Pieces
                 allowedMoves.Add((pieceLocation.y + i * direction, pieceLocation.x));
             }
 
-            return ApplyTransformations(board, allowedMoves.Select(_ => new int[] { _.y, _.x }).ToArray());
+            ApplyTransformations(board, allowedMoves);
+
+            return allowedMoves;
         }
     }
 }

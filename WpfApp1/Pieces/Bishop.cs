@@ -13,7 +13,7 @@ namespace ChessWpf.Pieces
 
         public override string ImageName => "bishop";
 
-        public override int[][] GetAllowedMoves(BoardState board)
+        public override List<(int y, int x)> GetAllowedMoves(BoardState board)
         {
             var allowedMoves = new List<(int y, int x)>();
 
@@ -22,7 +22,9 @@ namespace ChessWpf.Pieces
             GetLineMoves(board, allowedMoves, (1, -1));
             GetLineMoves(board, allowedMoves, (-1, -1));
 
-            return ApplyTransformations(board, allowedMoves.Select(_ => new int[] { _.y, _.x }).ToArray());
+            ApplyTransformations(board, allowedMoves);
+
+            return allowedMoves;
         }
     }
 }

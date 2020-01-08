@@ -42,7 +42,7 @@ namespace ChessWpf
             {
                 var moves = ClickedPiece.GetAllowedMoves(Board).ToArray();
 
-                if (moves.Any(_ => _[0] == y && _[1] == x))
+                if (moves.Any(_ => _.y == y && _.x == x))
                 {
                     ClickedPiece.AlreadyMoved = true;
                     var location = Board.GetPieceLocation(ClickedPiece);

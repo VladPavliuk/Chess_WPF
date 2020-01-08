@@ -44,30 +44,29 @@ namespace ChessWpf.Pieces
             }
         }
 
-        public abstract int[][] GetAllowedMoves(BoardState board);
+        public abstract List<(int y, int x)> GetAllowedMoves(BoardState board);
 
-        protected int[][] ApplyTransformations(BoardState board, int[][] locationsToFilter)
+        protected void FilterOutOfBoard(ref List<(int y, int x)> locationsToFilter)
         {
-            var filteredLocation = new List<(int y, int x)>();
+            locationsToFilter = locationsToFilter.Where(l => l.y < 8 && l.y >= 0 && l.x < 8 && l.x >= 0).ToList();
+        }
 
-            for (int i = 0; i < locationsToFilter.Length; i++)
-            {
-                var y = locationsToFilter[i][0];
-                var x = locationsToFilter[i][1];
+        protected void FilterOutSamePlayerPices(BoardState board, ref List<(int y, int x)> locationsToFilter)
+        {
+            locationsToFilter = locationsToFilter.Where(l => board.Squares[l.y, l.x].CurrentPiece == null
+                    || (board.Squares[l.y, l.x].CurrentPiece.ControlledBy != ControlledBy)).ToList();
+        }
 
-                if (x >= 8 || x < 0 || y >= 8 || y < 0)
-                {
-                    continue;
-                }
+        protected void FilterOurOpositeKing(BoardState board, ref List<(int y, int x)> locationsToFilter)
+        {
+            locationsToFilter = locationsToFilter.Where(l => !(board.Squares[l.y, l.x].CurrentPiece is King)).ToList();
+        }
 
-                if (board.Squares[y, x].CurrentPiece == null
-                    || (board.Squares[y, x].CurrentPiece.ControlledBy != ControlledBy && !(board.Squares[y, x].CurrentPiece is King)))
-                {
-                    filteredLocation.Add((y, x));
-                }
-            }
-
-            return filteredLocation.Select(_ => new int[] { _.y, _.x }).ToArray();
+        protected void ApplyTransformations(BoardState board, List<(int y, int x)> locationsToFilter)
+        {
+            FilterOutOfBoard(ref locationsToFilter);
+            FilterOutSamePlayerPices(board, ref locationsToFilter);
+            //FilterOurOpositeKing(board, ref locationsToFilter);
         }
 
         protected List<(int y, int x)> GetLineMoves(
