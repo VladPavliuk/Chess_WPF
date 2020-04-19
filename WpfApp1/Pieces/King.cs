@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace ChessWpf.Pieces
 {
@@ -34,7 +33,7 @@ namespace ChessWpf.Pieces
                 }
             }
 
-            ApplyTransformations(board, allowedMoves);
+            ApplyTransformations(board, ref allowedMoves);
 
             return allowedMoves;
         }

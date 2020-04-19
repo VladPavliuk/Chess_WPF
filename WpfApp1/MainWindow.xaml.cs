@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,8 @@ namespace ChessWpf
 
         private BasePiece ClickedPiece { get; set; }
 
+        private List<(int y, int x)> ClickedPieceMoves { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -29,14 +32,32 @@ namespace ChessWpf
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            DrawBoard();
+
             var clickedPoint = Mouse.GetPosition(CanvasElement);
 
             var x = (int)(clickedPoint.X * 8 / CanvasElement.Width);
             var y = (int)(clickedPoint.Y * 8 / CanvasElement.Height);
 
+            UpdatePieces(y, x);
+
+            DrawPieces();
+        }
+
+        private void UpdatePieces(int y, int x)
+        {
             if (ClickedPiece == null)
             {
+                if (Board.Squares[y, x].CurrentPiece == null)
+                {
+                    return;
+                }
+
                 ClickedPiece = Board.Squares[y, x].CurrentPiece;
+
+                var moves = ClickedPiece.GetAllowedMoves(Board);
+
+                DrawShadowPieces(ClickedPiece, moves);
             }
             else
             {
@@ -53,9 +74,6 @@ namespace ChessWpf
 
                 ClickedPiece = null;
             }
-
-            DrawBoard();
-            DrawPieces();
         }
 
         private void InitBoardState()
@@ -63,15 +81,55 @@ namespace ChessWpf
             Board = new BoardState();
         }
 
+        private void DrawShadowPieces(BasePiece shadowPiece, List<(int y, int x)> possibleMoves)
+        {
+            Func<BitmapImage, Image> getImage = (BitmapImage image) =>
+               new Image()
+               {
+                   Width = CanvasElement.Width / 8,
+                   Height = CanvasElement.Height / 8,
+                   Source = image
+               };
+
+            var unit = (int)CanvasElement.Height / 8;
+
+            foreach (var (y, x) in possibleMoves)
+            {
+                if (Board.Squares[y, x].CurrentPiece != null)
+                {
+                    var pieceBorder = new Border();
+                    pieceBorder.Background = new SolidColorBrush(Colors.Red);
+
+                    pieceBorder.Child = getImage(Board.Squares[y, x].CurrentPiece.Image);
+
+                    Canvas.SetTop(pieceBorder, y * unit);
+                    Canvas.SetLeft(pieceBorder, x * unit);
+
+                    CanvasElement.Children.Add(pieceBorder);
+                }
+                else
+                {
+                    var pieceImage = getImage(shadowPiece.Image);
+
+                    pieceImage.Opacity = 0.3;
+
+                    Canvas.SetTop(pieceImage, y * unit);
+                    Canvas.SetLeft(pieceImage, x * unit);
+
+                    CanvasElement.Children.Add(pieceImage);
+                }
+            }
+        }
+
         private void DrawPieces()
         {
             Func<BitmapImage, Image> getImage = (BitmapImage image) =>
-            new Image()
-            {
-                Width = CanvasElement.Width / 8,
-                Height = CanvasElement.Height / 8,
-                Source = image
-            };
+                new Image()
+                {
+                    Width = CanvasElement.Width / 8,
+                    Height = CanvasElement.Height / 8,
+                    Source = image
+                };
 
             var unit = (int)CanvasElement.Height / 8;
 

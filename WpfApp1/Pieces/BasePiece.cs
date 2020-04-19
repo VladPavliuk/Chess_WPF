@@ -62,11 +62,11 @@ namespace ChessWpf.Pieces
             locationsToFilter = locationsToFilter.Where(l => !(board.Squares[l.y, l.x].CurrentPiece is King)).ToList();
         }
 
-        protected void ApplyTransformations(BoardState board, List<(int y, int x)> locationsToFilter)
+        protected void ApplyTransformations(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
             FilterOutOfBoard(ref locationsToFilter);
             FilterOutSamePlayerPices(board, ref locationsToFilter);
-            //FilterOurOpositeKing(board, ref locationsToFilter);
+            FilterOurOpositeKing(board, ref locationsToFilter);
         }
 
         protected List<(int y, int x)> GetLineMoves(

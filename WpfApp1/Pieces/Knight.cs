@@ -28,7 +28,7 @@ namespace ChessWpf.Pieces
                 (-move.y + y, -move.x + x),
             }).SelectMany(_ => _).ToList();
 
-            ApplyTransformations(board, allowedMoves);
+            ApplyTransformations(board, ref allowedMoves);
 
             return allowedMoves;
         }
