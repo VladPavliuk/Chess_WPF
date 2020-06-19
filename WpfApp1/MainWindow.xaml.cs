@@ -20,7 +20,13 @@ namespace ChessWpf
 
         private BasePiece ClickedPiece { get; set; }
 
-        private List<(int y, int x)> ClickedPieceMoves { get; set; }
+        //private List<(int y, int x)> ClickedPieceMoves { get; set; }
+        private Player CurrentPlayer = Player.White;
+
+        private Player OpositePlayer
+        {
+            get => CurrentPlayer == Player.White ? Player.Black : Player.White;
+        }
 
         public MainWindow()
         {
@@ -55,12 +61,29 @@ namespace ChessWpf
 
                 ClickedPiece = Board.Squares[y, x].CurrentPiece;
 
+                if (ClickedPiece.ControlledBy != CurrentPlayer)
+                {
+                    ClickedPiece = null;
+                    return;
+                }
+
+                //if (Board.IsCheck && !(ClickedPiece is King))
+                //{
+                //    ClickedPiece = null;
+                //    return;
+                //}
+
                 var moves = ClickedPiece.GetAllowedMoves(Board);
 
                 DrawShadowPieces(ClickedPiece, moves);
             }
             else
             {
+                if (ClickedPiece.ControlledBy != CurrentPlayer)
+                {
+                    return;
+                }
+
                 var moves = ClickedPiece.GetAllowedMoves(Board).ToArray();
 
                 if (moves.Any(_ => _.y == y && _.x == x))
@@ -70,6 +93,15 @@ namespace ChessWpf
 
                     Board.Squares[y, x].CurrentPiece = ClickedPiece;
                     Board.Squares[location.y, location.x].CurrentPiece = null;
+
+                    var newMoves = ClickedPiece.GetAllowedMoves(Board).ToArray();
+
+                    if (newMoves.Any(m => Board.Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != CurrentPlayer))
+                    {
+                        Board.IsCheck = OpositePlayer;
+                    }
+
+                    CurrentPlayer = OpositePlayer;
                 }
 
                 ClickedPiece = null;

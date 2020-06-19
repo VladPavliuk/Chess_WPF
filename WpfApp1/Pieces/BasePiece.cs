@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 
 namespace ChessWpf.Pieces
@@ -51,22 +52,46 @@ namespace ChessWpf.Pieces
             locationsToFilter = locationsToFilter.Where(l => l.y < 8 && l.y >= 0 && l.x < 8 && l.x >= 0).ToList();
         }
 
-        protected void FilterOutSamePlayerPices(BoardState board, ref List<(int y, int x)> locationsToFilter)
+        protected void FilterSamePlayerPices(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
             locationsToFilter = locationsToFilter.Where(l => board.Squares[l.y, l.x].CurrentPiece == null
                     || (board.Squares[l.y, l.x].CurrentPiece.ControlledBy != ControlledBy)).ToList();
         }
 
-        protected void FilterOurOpositeKing(BoardState board, ref List<(int y, int x)> locationsToFilter)
+        protected void FilterNonKingDefending(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
-            locationsToFilter = locationsToFilter.Where(l => !(board.Squares[l.y, l.x].CurrentPiece is King)).ToList();
+            var opositePlayer = ControlledBy == Player.White ? Player.Black : Player.White;
+
+            var opositePlayerPieces = board.GetPlayerPieces(opositePlayer);
+
+            var piecsWithCheck = opositePlayerPieces
+                .Select(p => new { piece = p, moves = p.GetAllowedMoves(board) })
+                .Where(p => p.moves.Any(s =>
+                    {
+                        var piece = board.Squares[s.y, s.x].CurrentPiece;
+
+                        return piece != null && piece.ControlledBy == opositePlayer && piece is King;
+                    }
+                )).ToList();
+
+            dynamic test = 1;
+        }
+
+        protected void FilterOpositeKing(BoardState board, ref List<(int y, int x)> locationsToFilter)
+        {
+            //locationsToFilter = locationsToFilter.Where(l => !(board.Squares[l.y, l.x].CurrentPiece is King)).ToList();
         }
 
         protected void ApplyTransformations(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
             FilterOutOfBoard(ref locationsToFilter);
-            FilterOutSamePlayerPices(board, ref locationsToFilter);
-            FilterOurOpositeKing(board, ref locationsToFilter);
+            FilterSamePlayerPices(board, ref locationsToFilter);
+            FilterOpositeKing(board, ref locationsToFilter);
+
+            if (board.IsCheck == ControlledBy)
+            {
+                FilterNonKingDefending(board, ref locationsToFilter);
+            }
         }
 
         protected List<(int y, int x)> GetLineMoves(
