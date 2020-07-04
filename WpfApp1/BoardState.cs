@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ChessWpf.Pieces;
+using System;
 using System.Collections.Generic;
-using ChessWpf.Pieces;
 
 namespace ChessWpf
 {
@@ -9,6 +9,8 @@ namespace ChessWpf
         public readonly BoardSquare[,] Squares = new BoardSquare[8, 8];
 
         public Player? IsCheck { get; set; } = null;
+
+        public int RecurtionLevel { get; set; } = 0;
 
         public BoardState()
         {
@@ -21,6 +23,29 @@ namespace ChessWpf
             }
 
             InitDefaultChessPieces();
+        }
+
+        public BoardState(BoardSquare[,] squares)
+        {
+            for (var i = 0; i < 8; i++)
+            {
+                for (var j = 0; j < 8; j++)
+                {
+                    Squares[i, j] = new BoardSquare()
+                    {
+                        CurrentPiece = squares[i, j]?.CurrentPiece
+                    };
+                }
+            }
+        }
+
+        public BoardState Copy()
+        {
+            return new BoardState(Squares)
+            {
+                IsCheck = IsCheck,
+                RecurtionLevel = RecurtionLevel
+            };
         }
 
         public (int y, int x) GetPieceLocation(BasePiece piece)
@@ -47,7 +72,7 @@ namespace ChessWpf
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    var piece = Squares[i, j].CurrentPiece;
+                    var piece = Squares[i, j]?.CurrentPiece;
 
                     if (piece != null && piece.ControlledBy == player)
                     {

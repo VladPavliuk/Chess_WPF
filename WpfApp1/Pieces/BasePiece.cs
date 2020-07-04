@@ -58,23 +58,34 @@ namespace ChessWpf.Pieces
                     || (board.Squares[l.y, l.x].CurrentPiece.ControlledBy != ControlledBy)).ToList();
         }
 
-        protected void FilterNonKingDefending(BoardState board, ref List<(int y, int x)> locationsToFilter)
+        protected void FilterCheck(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
             var opositePlayer = ControlledBy == Player.White ? Player.Black : Player.White;
+            var currentPieceLocation = board.GetPieceLocation(this);
 
-            var opositePlayerPieces = board.GetPlayerPieces(opositePlayer);
+            locationsToFilter = locationsToFilter.Where(l =>
+            {
+                var shadowBoard = board.Copy();
 
-            var piecsWithCheck = opositePlayerPieces
-                .Select(p => new { piece = p, moves = p.GetAllowedMoves(board) })
-                .Where(p => p.moves.Any(s =>
-                    {
-                        var piece = board.Squares[s.y, s.x].CurrentPiece;
+                shadowBoard.RecurtionLevel++;
 
-                        return piece != null && piece.ControlledBy == opositePlayer && piece is King;
-                    }
-                )).ToList();
+                shadowBoard.Squares[l.y, l.x].CurrentPiece = this;
+                shadowBoard.Squares[currentPieceLocation.y, currentPieceLocation.x].CurrentPiece = null;
 
-            dynamic test = 1;
+                var opositePlayerPieces = shadowBoard.GetPlayerPieces(opositePlayer);
+
+                var piecsWithCheck = opositePlayerPieces
+                      .Select(p => new { piece = p, moves = p.GetAllowedMoves(shadowBoard) })
+                      .Where(p => p.moves.Any(s =>
+                      {
+                          var piece = shadowBoard.Squares[s.y, s.x].CurrentPiece;
+
+                          return piece != null && piece.ControlledBy == shadowBoard.IsCheck && piece is King;
+                      }
+                      )).ToList();
+
+                return !piecsWithCheck.Any();
+            }).ToList();
         }
 
         protected void FilterOpositeKing(BoardState board, ref List<(int y, int x)> locationsToFilter)
@@ -88,9 +99,9 @@ namespace ChessWpf.Pieces
             FilterSamePlayerPices(board, ref locationsToFilter);
             FilterOpositeKing(board, ref locationsToFilter);
 
-            if (board.IsCheck == ControlledBy)
+            if (board.RecurtionLevel < 1)
             {
-                FilterNonKingDefending(board, ref locationsToFilter);
+                FilterCheck(board, ref locationsToFilter);
             }
         }
 

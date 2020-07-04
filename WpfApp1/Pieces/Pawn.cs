@@ -19,19 +19,26 @@ namespace ChessWpf.Pieces
 
             var direction = ControlledBy == Player.Black ? 1 : -1;
 
-            var leftTop = board.Squares[pieceLocation.y + direction, pieceLocation.x - 1].CurrentPiece;
-            var rightTop = board.Squares[pieceLocation.y + direction, pieceLocation.x + 1].CurrentPiece;
-
-            if (leftTop != null && leftTop.ControlledBy != ControlledBy)
+            if (pieceLocation.x > 0)
             {
-                allowedMoves.Add((pieceLocation.y + direction, pieceLocation.x - 1));
+                var leftTop = board.Squares[pieceLocation.y + direction, pieceLocation.x - 1].CurrentPiece;
+
+                if (leftTop != null && leftTop.ControlledBy != ControlledBy)
+                {
+                    allowedMoves.Add((pieceLocation.y + direction, pieceLocation.x - 1));
+                }
             }
 
-            if (rightTop != null && rightTop.ControlledBy != ControlledBy)
+            if (pieceLocation.x < 7)
             {
-                allowedMoves.Add((pieceLocation.y + direction, pieceLocation.x + 1));
-            }
+                var rightTop = board.Squares[pieceLocation.y + direction, pieceLocation.x + 1].CurrentPiece;
 
+                if (rightTop != null && rightTop.ControlledBy != ControlledBy)
+                {
+                    allowedMoves.Add((pieceLocation.y + direction, pieceLocation.x + 1));
+                }
+            }
+               
             for (var i = 1; i < (AlreadyMoved ? 2 : 3); i++)
             {
                 if (board.Squares[pieceLocation.y + i * direction, pieceLocation.x].CurrentPiece != null)
