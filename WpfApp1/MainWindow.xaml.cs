@@ -21,12 +21,6 @@ namespace ChessWpf
         private BasePiece ClickedPiece { get; set; }
 
         //private List<(int y, int x)> ClickedPieceMoves { get; set; }
-        private Player CurrentPlayer = Player.White;
-
-        private Player OpositePlayer
-        {
-            get => CurrentPlayer == Player.White ? Player.Black : Player.White;
-        }
 
         public MainWindow()
         {
@@ -48,6 +42,8 @@ namespace ChessWpf
             UpdatePieces(y, x);
 
             DrawPieces();
+
+            Board.IsEndGame();
         }
 
         private void UpdatePieces(int y, int x)
@@ -61,7 +57,7 @@ namespace ChessWpf
 
                 ClickedPiece = Board.Squares[y, x].CurrentPiece;
 
-                if (ClickedPiece.ControlledBy != CurrentPlayer)
+                if (ClickedPiece.ControlledBy != Board.CurrentPlayer)
                 {
                     ClickedPiece = null;
                     return;
@@ -79,7 +75,7 @@ namespace ChessWpf
             }
             else
             {
-                if (ClickedPiece.ControlledBy != CurrentPlayer)
+                if (ClickedPiece.ControlledBy != Board.CurrentPlayer)
                 {
                     return;
                 }
@@ -95,13 +91,13 @@ namespace ChessWpf
                     Board.Squares[location.y, location.x].CurrentPiece = null;
 
                     var newMoves = ClickedPiece.GetAllowedMoves(Board).ToArray();
-
-                    if (newMoves.Any(m => Board.Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != CurrentPlayer))
+                    Board.IsCheck = null;
+                    if (newMoves.Any(m => Board.Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != Board.CurrentPlayer))
                     {
-                        Board.IsCheck = OpositePlayer;
+                        Board.IsCheck = Board.OpositePlayer;
                     }
 
-                    CurrentPlayer = OpositePlayer;
+                    Board.CurrentPlayer = Board.OpositePlayer;
                 }
 
                 ClickedPiece = null;
@@ -110,7 +106,15 @@ namespace ChessWpf
 
         private void InitBoardState()
         {
-            Board = new BoardState();
+            Board = new BoardState()
+            {
+                CheckmateHandler = (Player player) => {
+                    MessageBox.Show(player.ToString() + " won!" );
+                },
+                DrawHandler = () => {
+                    MessageBox.Show("DRAW!");
+                },
+            };
         }
 
         private void DrawShadowPieces(BasePiece shadowPiece, List<(int y, int x)> possibleMoves)

@@ -26,10 +26,7 @@ namespace ChessWpf.Pieces
                         continue;
                     }
 
-                    var y = pieceLocation.y + i;
-                    var x = pieceLocation.x + j;
-
-                    allowedMoves.Add((y, x));
+                    allowedMoves.Add((pieceLocation.y + i, pieceLocation.x + j));
                 }
             }
 

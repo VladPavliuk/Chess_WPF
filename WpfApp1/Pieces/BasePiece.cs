@@ -80,7 +80,7 @@ namespace ChessWpf.Pieces
                       {
                           var piece = shadowBoard.Squares[s.y, s.x].CurrentPiece;
 
-                          return piece != null && piece.ControlledBy == shadowBoard.IsCheck && piece is King;
+                          return piece != null && piece is King;
                       }
                       )).ToList();
 

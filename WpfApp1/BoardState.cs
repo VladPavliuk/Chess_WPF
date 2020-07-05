@@ -1,6 +1,7 @@
 ﻿using ChessWpf.Pieces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessWpf
 {
@@ -8,9 +9,36 @@ namespace ChessWpf
     {
         public readonly BoardSquare[,] Squares = new BoardSquare[8, 8];
 
+        public Player CurrentPlayer
+        {
+            get
+            {
+                return CurrentPlayerInternal;
+            }
+            set
+            {
+                IsEndGameInternal();
+                CurrentPlayerInternal = value;
+            }
+        }
+
+        public Player OpositePlayer => CurrentPlayer == Player.White ? Player.Black : Player.White;
+
         public Player? IsCheck { get; set; } = null;
 
         public int RecurtionLevel { get; set; } = 0;
+
+        public bool EndGame => IsCheckmate || IsDraw;
+
+        public Action<Player> CheckmateHandler { get; set; }
+
+        public Action DrawHandler { get; set; }
+
+        private Player CurrentPlayerInternal = Player.White;
+
+        private bool IsCheckmate = false;
+
+        private bool IsDraw = false;
 
         public BoardState()
         {
@@ -84,6 +112,25 @@ namespace ChessWpf
             return pieces;
         }
 
+        public void IsEndGame()
+        {
+            if (EndGame)
+            {
+                if (IsCheckmate)
+                {
+                    CheckmateHandler(OpositePlayer);
+                }
+                else if (IsDraw)
+                {
+                    DrawHandler();
+                }
+                else
+                {
+                    throw new Exception("The game ends what it's a checkmate or a draw!");
+                }
+            }
+        }
+
         private void InitDefaultChessPieces()
         {
             Squares[0, 0].CurrentPiece = new Rook(Player.Black);
@@ -112,6 +159,21 @@ namespace ChessWpf
             for (var i = 0; i < 8; i++)
             {
                 Squares[6, i].CurrentPiece = new Pawn(Player.White);
+            }
+        }
+
+        private void IsEndGameInternal()
+        {
+            if (!GetPlayerPieces(OpositePlayer).Any(piece => piece.GetAllowedMoves(this).Any()))
+            {
+                if (IsCheck == OpositePlayer)
+                {
+                    IsCheckmate = true;
+                }
+                else
+                {
+                    IsDraw = true;
+                }
             }
         }
 
