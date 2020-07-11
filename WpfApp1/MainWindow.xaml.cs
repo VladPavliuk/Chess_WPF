@@ -91,13 +91,17 @@ namespace ChessWpf
 
                 if (moves.Any(_ => _.y == y && _.x == x))
                 {
+                    Board.EnPassantPawn = null;
                     ClickedPiece.AlreadyMoved = true;
+
                     var location = Board.GetPieceLocation(ClickedPiece);
 
-                    //TODO: It should be in Board class, somthing like movePiece(from, to)
-                    Board.Squares[y, x].CurrentPiece = ClickedPiece;
-                    Board.Squares[location.y, location.x].CurrentPiece = null;
+                    if (ClickedPiece is Pawn pawnPiece && Math.Abs(y - location.y) == 2)
+                    {
+                        Board.EnPassantPawn = pawnPiece;
+                    }
 
+                    // For castling and enPassant pawn
                     if (additionalMoves.ContainsKey((y, x)))
                     {
                         foreach (var move in additionalMoves[(y, x)])
@@ -106,6 +110,11 @@ namespace ChessWpf
                             Board.Squares[move.Item1.y, move.Item1.x].CurrentPiece = null;
                         }
                     }
+
+                    //TODO: It should be in Board class, somthing like movePiece(from, to)
+                    Board.Squares[y, x].CurrentPiece = ClickedPiece;
+                    Board.Squares[location.y, location.x].CurrentPiece = null;
+
 
                     if ((y == 7 || y == 0) && Board.Squares[y, x].CurrentPiece is Pawn)
                     {

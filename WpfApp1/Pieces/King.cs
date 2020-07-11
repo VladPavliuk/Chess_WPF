@@ -36,7 +36,7 @@ namespace ChessWpf.Pieces
 
         public override Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>> GetAdditionalMoves(BoardState board)
         {
-            var castleMoves = new Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>>();
+            var castleMoves = base.GetAdditionalMoves(board);
 
             if (AlreadyMoved) return castleMoves;
 

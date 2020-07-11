@@ -36,6 +36,8 @@ namespace ChessWpf
 
         private Player CurrentPlayerInternal = Player.White;
 
+        public Pawn EnPassantPawn { get; set; }
+
         private bool IsCheckmate = false;
 
         private bool IsDraw = false;

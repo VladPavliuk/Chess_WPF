@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ChessWpf.Pieces
 {
@@ -41,7 +42,7 @@ namespace ChessWpf.Pieces
                     allowedMoves.Add((pieceLocation.y + direction, pieceLocation.x + 1));
                 }
             }
-               
+
             for (var i = 1; i < (AlreadyMoved ? 2 : 3); i++)
             {
                 if (board.Squares[pieceLocation.y + i * direction, pieceLocation.x].CurrentPiece != null)
@@ -55,6 +56,33 @@ namespace ChessWpf.Pieces
             ApplyTransformations(board, ref allowedMoves);
 
             return allowedMoves;
+        }
+
+        public override Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>> GetAdditionalMoves(BoardState board)
+        {
+            var enPessantPawnsMoves = base.GetAdditionalMoves(board);
+
+            var direction = ControlledBy == Player.Black ? 1 : -1;
+
+            var pieceLocation = board.GetPieceLocation(this);
+
+            if (board.EnPassantPawn != null)
+            {
+                var enPassantPawnLocation = board.GetPieceLocation(board.EnPassantPawn);
+
+                if (enPassantPawnLocation.y == pieceLocation.y && Math.Abs(enPassantPawnLocation.x - pieceLocation.x) == 1)
+                {
+                    var enPessantPawnRollback = new List<((int y, int x), (int y, int x))>()
+                    {
+                        ((enPassantPawnLocation.y, enPassantPawnLocation.x), (enPassantPawnLocation.y + direction, enPassantPawnLocation.x))
+                    };
+
+                    enPessantPawnsMoves.Add((enPassantPawnLocation.y + direction, enPassantPawnLocation.x), enPessantPawnRollback);
+                }
+            }
+
+
+            return enPessantPawnsMoves;
         }
     }
 }
