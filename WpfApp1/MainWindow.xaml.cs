@@ -70,6 +70,9 @@ namespace ChessWpf
                 //}
 
                 var moves = ClickedPiece.GetAllowedMoves(Board);
+                var additionalMoves = ClickedPiece.GetAdditionalMoves(Board);
+
+                moves.AddRange(additionalMoves.Select(m => m.Key));
 
                 DrawShadowPieces(ClickedPiece, moves);
             }
@@ -80,17 +83,40 @@ namespace ChessWpf
                     return;
                 }
 
-                var moves = ClickedPiece.GetAllowedMoves(Board).ToArray();
+                //TODO: Do not recalculate possible moves again, save it from the prev step.
+                var moves = ClickedPiece.GetAllowedMoves(Board);
+                var additionalMoves = ClickedPiece.GetAdditionalMoves(Board);
+
+                moves.AddRange(additionalMoves.Select(m => m.Key));
 
                 if (moves.Any(_ => _.y == y && _.x == x))
                 {
                     ClickedPiece.AlreadyMoved = true;
                     var location = Board.GetPieceLocation(ClickedPiece);
 
+                    //TODO: It should be in Board class, somthing like movePiece(from, to)
                     Board.Squares[y, x].CurrentPiece = ClickedPiece;
                     Board.Squares[location.y, location.x].CurrentPiece = null;
 
+                    if (additionalMoves.ContainsKey((y, x)))
+                    {
+                        foreach (var move in additionalMoves[(y, x)])
+                        {
+                            Board.Squares[move.Item2.y, move.Item2.x].CurrentPiece = Board.Squares[move.Item1.y, move.Item1.x].CurrentPiece;
+                            Board.Squares[move.Item1.y, move.Item1.x].CurrentPiece = null;
+                        }
+                    }
+
+                    if ((y == 7 || y == 0) && Board.Squares[y, x].CurrentPiece is Pawn)
+                    {
+                        var promotionPieces = Board.GetPromotionPieces();
+                        // TODO: Add ability choose a promition piece.
+                        Board.Squares[y, x].CurrentPiece = promotionPieces[0];
+                        ClickedPiece = promotionPieces[0];
+                    }
+
                     var newMoves = ClickedPiece.GetAllowedMoves(Board).ToArray();
+
                     Board.IsCheck = null;
                     if (newMoves.Any(m => Board.Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != Board.CurrentPlayer))
                     {
@@ -108,10 +134,12 @@ namespace ChessWpf
         {
             Board = new BoardState()
             {
-                CheckmateHandler = (Player player) => {
-                    MessageBox.Show(player.ToString() + " won!" );
+                CheckmateHandler = (Player player) =>
+                {
+                    MessageBox.Show(player.ToString() + " won!");
                 },
-                DrawHandler = () => {
+                DrawHandler = () =>
+                {
                     MessageBox.Show("DRAW!");
                 },
             };

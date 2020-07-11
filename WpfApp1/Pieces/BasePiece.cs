@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 
 namespace ChessWpf.Pieces
@@ -46,6 +45,8 @@ namespace ChessWpf.Pieces
         }
 
         public abstract List<(int y, int x)> GetAllowedMoves(BoardState board);
+
+        public virtual Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>> GetAdditionalMoves(BoardState board) => new Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>>();
 
         protected void FilterOutOfBoard(ref List<(int y, int x)> locationsToFilter)
         {

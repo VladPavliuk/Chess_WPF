@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessWpf.Pieces
 {
@@ -21,10 +23,7 @@ namespace ChessWpf.Pieces
             {
                 for (int j = -1; j < 2; j++)
                 {
-                    if (j == 0 && i == 0)
-                    {
-                        continue;
-                    }
+                    if (j == 0 && i == 0) continue;
 
                     allowedMoves.Add((pieceLocation.y + i, pieceLocation.x + j));
                 }
@@ -33,6 +32,49 @@ namespace ChessWpf.Pieces
             ApplyTransformations(board, ref allowedMoves);
 
             return allowedMoves;
+        }
+
+        public override Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>> GetAdditionalMoves(BoardState board)
+        {
+            var castleMoves = new Dictionary<(int y, int x), List<((int y, int x), (int y, int x))>>();
+
+            if (AlreadyMoved) return castleMoves;
+
+            var pieceLocation = board.GetPieceLocation(this);
+
+            var rooks = board.GetPlayerPieces(ControlledBy).Where(p => p is Rook && !p.AlreadyMoved)
+                .Select(p => new { piece = p, location = board.GetPieceLocation(p) })
+                .Where(p => p.location.y == pieceLocation.y)
+                .ToList();
+
+            foreach (var rook in rooks)
+            {
+                var coeff = rook.location.x > pieceLocation.x ? 1 : -1;
+
+                var castleTrack = new List<int>();
+
+                for (int i = 1; i < Math.Abs(rook.location.x - pieceLocation.x); i++)
+                {
+                    castleTrack.Add(pieceLocation.x + coeff * i);
+                }
+
+                var castleTrackToCheck = castleTrack.Select(sx => (pieceLocation.y, sx)).ToList();
+
+                ApplyTransformations(board, ref castleTrackToCheck);
+
+                if (castleTrackToCheck.Count == castleTrack.Count
+                    && castleTrack.All(sx => board.Squares[pieceLocation.y, sx].CurrentPiece == null))
+                {
+                    var rookMoves = new List<((int y, int x), (int y, int x))>()
+                    {
+                        ((rook.location.y, rook.location.x), (pieceLocation.y, pieceLocation.x + coeff))
+                    };
+
+                    castleMoves.Add((pieceLocation.y, pieceLocation.x + 2 * coeff), rookMoves);
+                }
+            }
+
+            return castleMoves;
         }
     }
 }

@@ -131,6 +131,16 @@ namespace ChessWpf
             }
         }
 
+        public List<BasePiece> GetPromotionPieces()
+        {
+            return new List<BasePiece>() { 
+                new Queen(CurrentPlayer),
+                new Rook(CurrentPlayer),
+                new Bishop(CurrentPlayer),
+                new Knight(CurrentPlayer)
+            };
+        }
+
         private void InitDefaultChessPieces()
         {
             Squares[0, 0].CurrentPiece = new Rook(Player.Black);

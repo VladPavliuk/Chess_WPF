@@ -15,6 +15,9 @@ namespace ChessWpf.Pieces
         public override List<(int y, int x)> GetAllowedMoves(BoardState board)
         {
             var pieceLocation = board.GetPieceLocation(this);
+
+            if (pieceLocation.y == 0 || pieceLocation.y == 7) return new List<(int y, int x)>();
+
             var allowedMoves = new List<(int y, int x)>();
 
             var direction = ControlledBy == Player.Black ? 1 : -1;
