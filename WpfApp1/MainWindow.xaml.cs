@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,7 +8,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using ChessWpf.Pieces;
+using ChessBreaker;
+using ChessBreaker.Pieces;
+using System.IO;
 
 namespace ChessWpf
 {
@@ -20,10 +23,24 @@ namespace ChessWpf
 
         private BasePiece ClickedPiece { get; set; }
 
-        //private List<(int y, int x)> ClickedPieceMoves { get; set; }
+        private readonly Dictionary<(Type, Player), BitmapImage> PiecesImages = new Dictionary<(Type, Player), BitmapImage>();
 
         public MainWindow()
         {
+            var pieceTypes = new Type[] { typeof(Bishop), typeof(King), typeof(Knight), typeof(Pawn), typeof(Queen), typeof(Rook) };
+            var players = new Player[] { Player.White, Player.Black };
+
+            var imagesBasePath = ConfigurationManager.AppSettings["ImagesBasePath"];
+            Func<string, string, BitmapImage> getImage = (string playerName, string pieceName) =>
+                new BitmapImage(new Uri(System.IO.Path.Combine(imagesBasePath, "Pieces", playerName, $"{playerName.ToLower()}_{pieceName.ToLower()}.png")));
+
+            foreach (var player in players)
+            {
+                foreach (var pieceType in pieceTypes) {
+                    PiecesImages.Add((pieceType, player), getImage(player.ToString(), pieceType.Name));
+                }
+            }
+
             InitializeComponent();
             InitBoardState();
             DrawBoard();
@@ -176,7 +193,8 @@ namespace ChessWpf
                     var pieceBorder = new Border();
                     pieceBorder.Background = new SolidColorBrush(Colors.Red);
 
-                    pieceBorder.Child = getImage(Board.Squares[y, x].CurrentPiece.Image);
+                    var piece = Board.Squares[y, x].CurrentPiece;
+                    pieceBorder.Child = getImage(PiecesImages[(piece.GetType(), piece.ControlledBy)]);
 
                     Canvas.SetTop(pieceBorder, y * unit);
                     Canvas.SetLeft(pieceBorder, x * unit);
@@ -185,7 +203,7 @@ namespace ChessWpf
                 }
                 else
                 {
-                    var pieceImage = getImage(shadowPiece.Image);
+                    var pieceImage = getImage(PiecesImages[(shadowPiece.GetType(), shadowPiece.ControlledBy)]);
 
                     pieceImage.Opacity = 0.3;
 
@@ -213,12 +231,10 @@ namespace ChessWpf
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    if (Board.Squares[i, j].CurrentPiece == null)
-                    {
-                        continue;
-                    }
+                    if (Board.Squares[i, j].CurrentPiece == null) continue;
 
-                    var pieceImage = getImage(Board.Squares[i, j].CurrentPiece.Image);
+                    var piece = Board.Squares[i, j].CurrentPiece;
+                    var pieceImage = getImage(PiecesImages[(piece.GetType(), piece.ControlledBy)]);
 
                     Canvas.SetTop(pieceImage, i * unit);
                     Canvas.SetLeft(pieceImage, j * unit);

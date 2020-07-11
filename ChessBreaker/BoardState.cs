@@ -1,9 +1,9 @@
-﻿using ChessWpf.Pieces;
+﻿using ChessBreaker.Pieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ChessWpf
+namespace ChessBreaker
 {
     public class BoardState
     {

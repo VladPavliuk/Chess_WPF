@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ChessWpf.Pieces
+namespace ChessBreaker.Pieces
 {
     public class Bishop : BasePiece
     {
@@ -9,8 +9,6 @@ namespace ChessWpf.Pieces
         }
 
         public override string Name => nameof(Bishop);
-
-        public override string ImageName => "bishop";
 
         public override List<(int y, int x)> GetAllowedMoves(BoardState board)
         {

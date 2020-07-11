@@ -1,47 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Media.Imaging;
 
-namespace ChessWpf.Pieces
+namespace ChessBreaker.Pieces
 {
     public abstract class BasePiece
     {
         public abstract string Name { get; }
 
-        public abstract string ImageName { get; }
-
         public readonly Player ControlledBy;
-
-        public readonly BitmapImage Image;
 
         public bool AlreadyMoved { get; set; }
 
         public BasePiece(Player controlledBy)
         {
             ControlledBy = controlledBy;
-
-            var imagesBasePath = ConfigurationManager.AppSettings["ImagesBasePath"];
-
-            switch (ControlledBy)
-            {
-                case Player.White:
-                    {
-                        Image = new BitmapImage(new Uri(Path.Combine(imagesBasePath, "Pieces", "White", $"white_{ImageName}.png")));
-                        break;
-                    }
-                case Player.Black:
-                    {
-                        Image = new BitmapImage(new Uri(Path.Combine(imagesBasePath, "Pieces", "Black", $"black_{ImageName}.png")));
-                        break;
-                    }
-                default:
-                    {
-                        throw new Exception("Undefined player");
-                    }
-            }
         }
 
         public abstract List<(int y, int x)> GetAllowedMoves(BoardState board);

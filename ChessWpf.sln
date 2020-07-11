@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChessWpf", "WpfApp1\ChessWpf.csproj", "{CB4727BF-E881-4D9A-B42C-0F5232C162D2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessBreaker", "ChessBreaker\ChessBreaker.csproj", "{269BF316-3912-4627-8D11-37FA82D8F35B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CB4727BF-E881-4D9A-B42C-0F5232C162D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB4727BF-E881-4D9A-B42C-0F5232C162D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB4727BF-E881-4D9A-B42C-0F5232C162D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{269BF316-3912-4627-8D11-37FA82D8F35B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{269BF316-3912-4627-8D11-37FA82D8F35B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{269BF316-3912-4627-8D11-37FA82D8F35B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{269BF316-3912-4627-8D11-37FA82D8F35B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

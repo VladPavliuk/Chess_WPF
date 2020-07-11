@@ -1,4 +1,4 @@
-﻿namespace ChessWpf
+﻿namespace ChessBreaker
 {
     public enum Player
     {
