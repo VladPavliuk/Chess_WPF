@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ChessWpf
+namespace ChessBreaker.WpfClient
 {
     /// <summary>
     /// Interaction logic for App.xaml

@@ -12,7 +12,7 @@ using ChessBreaker;
 using ChessBreaker.Pieces;
 using System.IO;
 
-namespace ChessWpf
+namespace ChessBreaker.WpfClient
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -30,9 +30,12 @@ namespace ChessWpf
             var pieceTypes = new Type[] { typeof(Bishop), typeof(King), typeof(Knight), typeof(Pawn), typeof(Queen), typeof(Rook) };
             var players = new Player[] { Player.White, Player.Black };
 
-            var imagesBasePath = ConfigurationManager.AppSettings["ImagesBasePath"];
+            var imagesBasePath = System.IO.Path.GetFullPath(ConfigurationManager.AppSettings["ImagesBasePath"]);
+            
             Func<string, string, BitmapImage> getImage = (string playerName, string pieceName) =>
-                new BitmapImage(new Uri(System.IO.Path.Combine(imagesBasePath, "Pieces", playerName, $"{playerName.ToLower()}_{pieceName.ToLower()}.png")));
+            {
+                return new BitmapImage(new Uri(System.IO.Path.Combine(imagesBasePath, "Pieces", playerName, $"{playerName.ToLower()}_{pieceName.ToLower()}.png")));
+            };
 
             foreach (var player in players)
             {
