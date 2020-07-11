@@ -115,7 +115,6 @@ namespace ChessWpf
                     Board.Squares[y, x].CurrentPiece = ClickedPiece;
                     Board.Squares[location.y, location.x].CurrentPiece = null;
 
-
                     if ((y == 7 || y == 0) && Board.Squares[y, x].CurrentPiece is Pawn)
                     {
                         var promotionPieces = Board.GetPromotionPieces();
@@ -127,7 +126,11 @@ namespace ChessWpf
                     var newMoves = ClickedPiece.GetAllowedMoves(Board).ToArray();
 
                     Board.IsCheck = null;
-                    if (newMoves.Any(m => Board.Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != Board.CurrentPlayer))
+
+                    var isCheck = Board.GetPlayerPieces(Board.CurrentPlayer).Any(piece =>
+                        piece.GetAllowedMoves(Board).Any(m => Board.Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != Board.CurrentPlayer));
+
+                    if (isCheck)
                     {
                         Board.IsCheck = Board.OpositePlayer;
                     }
