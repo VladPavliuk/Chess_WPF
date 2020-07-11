@@ -30,6 +30,8 @@ namespace ChessBreaker
 
         public bool EndGame => IsCheckmate || IsDraw;
 
+        public Action<BasePiece, List<(int y, int x)>> OnPieceClick;
+
         public Action<Player> CheckmateHandler { get; set; }
 
         public Action DrawHandler { get; set; }
@@ -37,6 +39,8 @@ namespace ChessBreaker
         private Player CurrentPlayerInternal = Player.White;
 
         public Pawn EnPassantPawn { get; set; }
+
+        private BasePiece ClickedPiece { get; set; }
 
         private bool IsCheckmate = false;
 
@@ -53,6 +57,96 @@ namespace ChessBreaker
             }
 
             InitDefaultChessPieces();
+        }
+
+        public void UpdatePieces(int y, int x)
+        {
+            if (ClickedPiece == null)
+            {
+                if (Squares[y, x].CurrentPiece == null)
+                {
+                    return;
+                }
+
+                ClickedPiece = Squares[y, x].CurrentPiece;
+
+                if (ClickedPiece.ControlledBy != CurrentPlayer)
+                {
+                    ClickedPiece = null;
+                    return;
+                }
+
+                var moves = ClickedPiece.GetAllowedMoves(this);
+                var additionalMoves = ClickedPiece.GetAdditionalMoves(this);
+
+                moves.AddRange(additionalMoves.Select(m => m.Key));
+
+                OnPieceClick(ClickedPiece, moves);
+            }
+            else
+            {
+                if (ClickedPiece.ControlledBy != CurrentPlayer)
+                {
+                    return;
+                }
+
+                //TODO: Do not recalculate possible moves again, save it from the prev step.
+                var moves = ClickedPiece.GetAllowedMoves(this);
+                var additionalMoves = ClickedPiece.GetAdditionalMoves(this);
+
+                moves.AddRange(additionalMoves.Select(m => m.Key));
+
+                if (moves.Any(_ => _.y == y && _.x == x))
+                {
+                    EnPassantPawn = null;
+                    ClickedPiece.AlreadyMoved = true;
+
+                    var location = GetPieceLocation(ClickedPiece);
+
+                    if (ClickedPiece is Pawn pawnPiece && Math.Abs(y - location.y) == 2)
+                    {
+                        EnPassantPawn = pawnPiece;
+                    }
+
+                    // For castling and enPassant pawn
+                    if (additionalMoves.ContainsKey((y, x)))
+                    {
+                        foreach (var move in additionalMoves[(y, x)])
+                        {
+                            Squares[move.Item2.y, move.Item2.x].CurrentPiece = Squares[move.Item1.y, move.Item1.x].CurrentPiece;
+                            Squares[move.Item1.y, move.Item1.x].CurrentPiece = null;
+                        }
+                    }
+
+                    //TODO: It should be in Board class, somthing like movePiece(from, to)
+                    Squares[y, x].CurrentPiece = ClickedPiece;
+                    Squares[location.y, location.x].CurrentPiece = null;
+
+                    if ((y == 7 || y == 0) && Squares[y, x].CurrentPiece is Pawn)
+                    {
+                        var promotionPieces = GetPromotionPieces();
+                        // TODO: Add ability choose a promition piece.
+                        Squares[y, x].CurrentPiece = promotionPieces[0];
+                        ClickedPiece = promotionPieces[0];
+                    }
+
+                    var newMoves = ClickedPiece.GetAllowedMoves(this).ToArray();
+
+                    IsCheck = null;
+
+                    var isCheck = GetPlayerPieces(CurrentPlayer).Any(piece =>
+                        piece.GetAllowedMoves(this).Any(m => Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != CurrentPlayer));
+
+                    if (isCheck)
+                    {
+                        IsCheck = OpositePlayer;
+                    }
+
+                    CurrentPlayer = OpositePlayer;
+                }
+
+                ClickedPiece = null;
+            }
         }
 
         public BoardState(BoardSquare[,] squares)
