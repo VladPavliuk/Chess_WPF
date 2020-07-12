@@ -94,12 +94,12 @@ namespace ChessBreaker.WpfClient
 
             foreach (var (y, x) in possibleMoves)
             {
-                if (Board.Squares[y, x].CurrentPiece != null)
+                if (Board.Squares[y, x] != null)
                 {
                     var pieceBorder = new Border();
                     pieceBorder.Background = new SolidColorBrush(Colors.Red);
 
-                    var piece = Board.Squares[y, x].CurrentPiece;
+                    var piece = Board.Squares[y, x];
                     pieceBorder.Child = getImage(PiecesImages[(piece.GetType(), piece.ControlledBy)]);
 
                     Canvas.SetTop(pieceBorder, y * unit);
@@ -137,9 +137,9 @@ namespace ChessBreaker.WpfClient
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    if (Board.Squares[i, j].CurrentPiece == null) continue;
+                    if (Board.Squares[i, j] == null) continue;
 
-                    var piece = Board.Squares[i, j].CurrentPiece;
+                    var piece = Board.Squares[i, j];
                     var pieceImage = getImage(PiecesImages[(piece.GetType(), piece.ControlledBy)]);
 
                     Canvas.SetTop(pieceImage, i * unit);

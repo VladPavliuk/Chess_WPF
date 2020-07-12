@@ -7,7 +7,7 @@ namespace ChessBreaker
 {
     public class BoardState
     {
-        public readonly BoardSquare[,] Squares = new BoardSquare[8, 8];
+        public readonly BasePiece[,] Squares = new BasePiece[8, 8];
 
         public Player CurrentPlayer
         {
@@ -30,11 +30,11 @@ namespace ChessBreaker
 
         public bool EndGame => IsCheckmate || IsDraw;
 
-        public Action<BasePiece, List<(int y, int x)>> OnPieceClick;
+        public Action<BasePiece, List<(int y, int x)>> OnPieceClick = delegate { };
 
-        public Action<Player> CheckmateHandler { get; set; }
+        public Action<Player> CheckmateHandler { get; set; } = delegate { };
 
-        public Action DrawHandler { get; set; }
+        public Action DrawHandler { get; set; } = delegate { };
 
         private Player CurrentPlayerInternal = Player.White;
 
@@ -48,13 +48,13 @@ namespace ChessBreaker
 
         public BoardState()
         {
-            for (var i = 0; i < 8; i++)
-            {
-                for (var j = 0; j < 8; j++)
-                {
-                    Squares[i, j] = new BoardSquare();
-                }
-            }
+            //for (var i = 0; i < 8; i++)
+            //{
+            //    for (var j = 0; j < 8; j++)
+            //    {
+            //        Squares[i, j] = new BoardSquare();
+            //    }
+            //}
 
             InitDefaultChessPieces();
         }
@@ -63,12 +63,12 @@ namespace ChessBreaker
         {
             if (ClickedPiece == null)
             {
-                if (Squares[y, x].CurrentPiece == null)
+                if (Squares[y, x] == null)
                 {
                     return;
                 }
 
-                ClickedPiece = Squares[y, x].CurrentPiece;
+                ClickedPiece = Squares[y, x];
 
                 if (ClickedPiece.ControlledBy != CurrentPlayer)
                 {
@@ -113,20 +113,20 @@ namespace ChessBreaker
                     {
                         foreach (var move in additionalMoves[(y, x)])
                         {
-                            Squares[move.Item2.y, move.Item2.x].CurrentPiece = Squares[move.Item1.y, move.Item1.x].CurrentPiece;
-                            Squares[move.Item1.y, move.Item1.x].CurrentPiece = null;
+                            Squares[move.Item2.y, move.Item2.x] = Squares[move.Item1.y, move.Item1.x];
+                            Squares[move.Item1.y, move.Item1.x] = null;
                         }
                     }
 
                     //TODO: It should be in Board class, somthing like movePiece(from, to)
-                    Squares[y, x].CurrentPiece = ClickedPiece;
-                    Squares[location.y, location.x].CurrentPiece = null;
+                    Squares[y, x] = ClickedPiece;
+                    Squares[location.y, location.x] = null;
 
-                    if ((y == 7 || y == 0) && Squares[y, x].CurrentPiece is Pawn)
+                    if ((y == 7 || y == 0) && Squares[y, x] is Pawn)
                     {
                         var promotionPieces = GetPromotionPieces();
                         // TODO: Add ability choose a promition piece.
-                        Squares[y, x].CurrentPiece = promotionPieces[0];
+                        Squares[y, x] = promotionPieces[0];
                         ClickedPiece = promotionPieces[0];
                     }
 
@@ -135,7 +135,7 @@ namespace ChessBreaker
                     IsCheck = null;
 
                     var isCheck = GetPlayerPieces(CurrentPlayer).Any(piece =>
-                        piece.GetAllowedMoves(this).Any(m => Squares[m.y, m.x].CurrentPiece is King king && king.ControlledBy != CurrentPlayer));
+                        piece.GetAllowedMoves(this).Any(m => Squares[m.y, m.x] is King king && king.ControlledBy != CurrentPlayer));
 
                     if (isCheck)
                     {
@@ -149,16 +149,13 @@ namespace ChessBreaker
             }
         }
 
-        public BoardState(BoardSquare[,] squares)
+        public BoardState(BasePiece[,] squares)
         {
             for (var i = 0; i < 8; i++)
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    Squares[i, j] = new BoardSquare()
-                    {
-                        CurrentPiece = squares[i, j]?.CurrentPiece
-                    };
+                    Squares[i, j] = squares[i, j];
                 }
             }
         }
@@ -178,7 +175,7 @@ namespace ChessBreaker
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    if (Squares[i, j].CurrentPiece == piece)
+                    if (Squares[i, j] == piece)
                     {
                         return (i, j);
                     }
@@ -196,7 +193,7 @@ namespace ChessBreaker
             {
                 for (var j = 0; j < 8; j++)
                 {
-                    var piece = Squares[i, j]?.CurrentPiece;
+                    var piece = Squares[i, j];
 
                     if (piece != null && piece.ControlledBy == player)
                     {
@@ -229,7 +226,7 @@ namespace ChessBreaker
 
         public List<BasePiece> GetPromotionPieces()
         {
-            return new List<BasePiece>() { 
+            return new List<BasePiece>() {
                 new Queen(CurrentPlayer),
                 new Rook(CurrentPlayer),
                 new Bishop(CurrentPlayer),
@@ -239,32 +236,32 @@ namespace ChessBreaker
 
         private void InitDefaultChessPieces()
         {
-            Squares[0, 0].CurrentPiece = new Rook(Player.Black);
-            Squares[0, 1].CurrentPiece = new Knight(Player.Black);
-            Squares[0, 2].CurrentPiece = new Bishop(Player.Black);
-            Squares[0, 3].CurrentPiece = new Queen(Player.Black);
-            Squares[0, 4].CurrentPiece = new King(Player.Black);
-            Squares[0, 5].CurrentPiece = new Bishop(Player.Black);
-            Squares[0, 6].CurrentPiece = new Knight(Player.Black);
-            Squares[0, 7].CurrentPiece = new Rook(Player.Black);
+            Squares[0, 0] = new Rook(Player.Black);
+            Squares[0, 1] = new Knight(Player.Black);
+            Squares[0, 2] = new Bishop(Player.Black);
+            Squares[0, 3] = new Queen(Player.Black);
+            Squares[0, 4] = new King(Player.Black);
+            Squares[0, 5] = new Bishop(Player.Black);
+            Squares[0, 6] = new Knight(Player.Black);
+            Squares[0, 7] = new Rook(Player.Black);
 
             for (var i = 0; i < 8; i++)
             {
-                Squares[1, i].CurrentPiece = new Pawn(Player.Black);
+                Squares[1, i] = new Pawn(Player.Black);
             }
 
-            Squares[7, 0].CurrentPiece = new Rook(Player.White);
-            Squares[7, 1].CurrentPiece = new Knight(Player.White);
-            Squares[7, 2].CurrentPiece = new Bishop(Player.White);
-            Squares[7, 3].CurrentPiece = new Queen(Player.White);
-            Squares[7, 4].CurrentPiece = new King(Player.White);
-            Squares[7, 5].CurrentPiece = new Bishop(Player.White);
-            Squares[7, 6].CurrentPiece = new Knight(Player.White);
-            Squares[7, 7].CurrentPiece = new Rook(Player.White);
+            Squares[7, 0] = new Rook(Player.White);
+            Squares[7, 1] = new Knight(Player.White);
+            Squares[7, 2] = new Bishop(Player.White);
+            Squares[7, 3] = new Queen(Player.White);
+            Squares[7, 4] = new King(Player.White);
+            Squares[7, 5] = new Bishop(Player.White);
+            Squares[7, 6] = new Knight(Player.White);
+            Squares[7, 7] = new Rook(Player.White);
 
             for (var i = 0; i < 8; i++)
             {
-                Squares[6, i].CurrentPiece = new Pawn(Player.White);
+                Squares[6, i] = new Pawn(Player.White);
             }
         }
 
@@ -281,11 +278,6 @@ namespace ChessBreaker
                     IsDraw = true;
                 }
             }
-        }
-
-        public class BoardSquare
-        {
-            public BasePiece CurrentPiece { get; set; }
         }
     }
 }

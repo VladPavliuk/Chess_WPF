@@ -61,7 +61,7 @@ namespace ChessBreaker.Pieces
                 ApplyTransformations(board, ref castleTrackToCheck);
 
                 if (castleTrackToCheck.Count == castleTrack.Count
-                    && castleTrack.All(sx => board.Squares[pieceLocation.y, sx].CurrentPiece == null))
+                    && castleTrack.All(sx => board.Squares[pieceLocation.y, sx] == null))
                 {
                     var rookMoves = new List<((int y, int x), (int y, int x))>()
                     {

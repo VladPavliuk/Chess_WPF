@@ -27,8 +27,8 @@ namespace ChessBreaker.Pieces
 
         protected void FilterSamePlayerPices(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
-            locationsToFilter = locationsToFilter.Where(l => board.Squares[l.y, l.x].CurrentPiece == null
-                    || (board.Squares[l.y, l.x].CurrentPiece.ControlledBy != ControlledBy)).ToList();
+            locationsToFilter = locationsToFilter.Where(l => board.Squares[l.y, l.x] == null
+                    || (board.Squares[l.y, l.x].ControlledBy != ControlledBy)).ToList();
         }
 
         protected void FilterCheck(BoardState board, ref List<(int y, int x)> locationsToFilter)
@@ -42,8 +42,8 @@ namespace ChessBreaker.Pieces
 
                 shadowBoard.RecurtionLevel++;
 
-                shadowBoard.Squares[l.y, l.x].CurrentPiece = this;
-                shadowBoard.Squares[currentPieceLocation.y, currentPieceLocation.x].CurrentPiece = null;
+                shadowBoard.Squares[l.y, l.x] = this;
+                shadowBoard.Squares[currentPieceLocation.y, currentPieceLocation.x] = null;
 
                 var opositePlayerPieces = shadowBoard.GetPlayerPieces(opositePlayer);
 
@@ -51,7 +51,7 @@ namespace ChessBreaker.Pieces
                       .Select(p => new { piece = p, moves = p.GetAllowedMoves(shadowBoard) })
                       .Where(p => p.moves.Any(s =>
                       {
-                          var piece = shadowBoard.Squares[s.y, s.x].CurrentPiece;
+                          var piece = shadowBoard.Squares[s.y, s.x];
 
                           return piece != null && piece is King;
                       }
@@ -61,17 +61,12 @@ namespace ChessBreaker.Pieces
             }).ToList();
         }
 
-        protected void FilterOpositeKing(BoardState board, ref List<(int y, int x)> locationsToFilter)
-        {
-            //locationsToFilter = locationsToFilter.Where(l => !(board.Squares[l.y, l.x].CurrentPiece is King)).ToList();
-        }
-
         protected void ApplyTransformations(BoardState board, ref List<(int y, int x)> locationsToFilter)
         {
             FilterOutOfBoard(ref locationsToFilter);
             FilterSamePlayerPices(board, ref locationsToFilter);
-            FilterOpositeKing(board, ref locationsToFilter);
 
+            // Looks weird
             if (board.RecurtionLevel < 1)
             {
                 FilterCheck(board, ref locationsToFilter);
@@ -95,9 +90,9 @@ namespace ChessBreaker.Pieces
                     break;
                 }
 
-                if (board.Squares[y, x].CurrentPiece != null)
+                if (board.Squares[y, x] != null)
                 {
-                    if (board.Squares[y, x].CurrentPiece.ControlledBy != ControlledBy)
+                    if (board.Squares[y, x].ControlledBy != ControlledBy)
                     {
                         allowedMoves.Add((y, x));
                     }
