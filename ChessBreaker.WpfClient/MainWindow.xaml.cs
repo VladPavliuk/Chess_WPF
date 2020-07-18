@@ -26,7 +26,7 @@ namespace ChessBreaker.WpfClient
             var players = new Player[] { Player.White, Player.Black };
 
             var imagesBasePath = System.IO.Path.GetFullPath(ConfigurationManager.AppSettings["ImagesBasePath"]);
-            
+
             Func<string, string, BitmapImage> getImage = (string playerName, string pieceName) =>
             {
                 return new BitmapImage(new Uri(System.IO.Path.Combine(imagesBasePath, "Pieces", playerName, $"{playerName.ToLower()}_{pieceName.ToLower()}.png")));
@@ -34,7 +34,8 @@ namespace ChessBreaker.WpfClient
 
             foreach (var player in players)
             {
-                foreach (var pieceType in pieceTypes) {
+                foreach (var pieceType in pieceTypes)
+                {
                     PiecesImages.Add((pieceType, player), getImage(player.ToString(), pieceType.Name));
                 }
             }
@@ -55,6 +56,11 @@ namespace ChessBreaker.WpfClient
             var y = (int)(clickedPoint.Y * 8 / CanvasElement.Height);
 
             Board.UpdatePieces(y, x);
+
+            if (Board.PromotionPiece != null)
+            {
+                Board.DoPiecePromotion("Q");
+            }
 
             DrawPieces();
 

@@ -40,27 +40,50 @@ namespace ChessBreaker
 
         public Pawn EnPassantPawn { get; set; }
 
+        public readonly Dictionary<string, Type> PromotionPieces = new Dictionary<string, Type>() {
+            { "Q", typeof(Queen) },
+            { "R", typeof(Rook) },
+            { "B", typeof(Bishop) },
+            { "K", typeof(Knight) }
+        };
+
         private BasePiece ClickedPiece { get; set; }
 
         private bool IsCheckmate = false;
 
         private bool IsDraw = false;
 
+        public Pawn PromotionPiece { get; private set; } = null;
+
         public BoardState()
         {
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    for (var j = 0; j < 8; j++)
-            //    {
-            //        Squares[i, j] = new BoardSquare();
-            //    }
-            //}
-
             InitDefaultChessPieces();
+        }
+
+        public void DoPiecePromotion(string pieceType)
+        {
+            if (PromotionPiece == null) return;
+
+            var promotionPieceLocation = GetPieceLocation(PromotionPiece);
+
+            if (PromotionPieces.ContainsKey(pieceType))
+            {
+                Squares[promotionPieceLocation.y, promotionPieceLocation.x] = (BasePiece)Activator.CreateInstance(PromotionPieces[pieceType], ClickedPiece.ControlledBy);
+
+                PromotionPiece = null;
+                ClickedPiece = null;
+                SwitchCurrentPlayer();
+            }
+            else
+            {
+                throw new Exception("Wrong piece type");
+            }
         }
 
         public void UpdatePieces(int y, int x)
         {
+            if (PromotionPiece != null) return;
+
             if (ClickedPiece == null)
             {
                 if (Squares[y, x] == null)
@@ -122,27 +145,13 @@ namespace ChessBreaker
                     Squares[y, x] = ClickedPiece;
                     Squares[location.y, location.x] = null;
 
-                    if ((y == 7 || y == 0) && Squares[y, x] is Pawn)
+                    if ((y == 7 || y == 0) && Squares[y, x] is Pawn promotionPiece)
                     {
-                        var promotionPieces = GetPromotionPieces();
-                        // TODO: Add ability choose a promition piece.
-                        Squares[y, x] = promotionPieces[0];
-                        ClickedPiece = promotionPieces[0];
+                        PromotionPiece = promotionPiece;
+                        return;
                     }
 
-                    var newMoves = ClickedPiece.GetAllowedMoves(this).ToArray();
-
-                    IsCheck = null;
-
-                    var isCheck = GetPlayerPieces(CurrentPlayer).Any(piece =>
-                        piece.GetAllowedMoves(this).Any(m => Squares[m.y, m.x] is King king && king.ControlledBy != CurrentPlayer));
-
-                    if (isCheck)
-                    {
-                        IsCheck = OpositePlayer;
-                    }
-
-                    CurrentPlayer = OpositePlayer;
+                    SwitchCurrentPlayer();
                 }
 
                 ClickedPiece = null;
@@ -224,14 +233,19 @@ namespace ChessBreaker
             }
         }
 
-        public List<BasePiece> GetPromotionPieces()
+        private void SwitchCurrentPlayer()
         {
-            return new List<BasePiece>() {
-                new Queen(CurrentPlayer),
-                new Rook(CurrentPlayer),
-                new Bishop(CurrentPlayer),
-                new Knight(CurrentPlayer)
-            };
+            IsCheck = null;
+
+            var isCheck = GetPlayerPieces(CurrentPlayer).Any(piece =>
+                piece.GetAllowedMoves(this).Any(m => Squares[m.y, m.x] is King king && king.ControlledBy != CurrentPlayer));
+
+            if (isCheck)
+            {
+                IsCheck = OpositePlayer;
+            }
+
+            CurrentPlayer = OpositePlayer;
         }
 
         private void InitDefaultChessPieces()
