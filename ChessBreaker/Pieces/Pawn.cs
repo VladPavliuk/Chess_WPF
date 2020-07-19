@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChessBreaker.Pieces
 {
@@ -52,6 +53,8 @@ namespace ChessBreaker.Pieces
             }
 
             ApplyTransformations(board, ref allowedMoves);
+
+            allowedMoves.AddRange(GetAdditionalMoves(board).Select(m => m.Key));
 
             return allowedMoves;
         }

@@ -44,7 +44,7 @@ namespace ChessBreaker
             { "Q", typeof(Queen) },
             { "R", typeof(Rook) },
             { "B", typeof(Bishop) },
-            { "K", typeof(Knight) }
+            { "N", typeof(Knight) }
         };
 
         private BasePiece ClickedPiece { get; set; }
@@ -100,9 +100,6 @@ namespace ChessBreaker
                 }
 
                 var moves = ClickedPiece.GetAllowedMoves(this);
-                var additionalMoves = ClickedPiece.GetAdditionalMoves(this);
-
-                moves.AddRange(additionalMoves.Select(m => m.Key));
 
                 OnPieceClick(ClickedPiece, moves);
             }
@@ -116,8 +113,6 @@ namespace ChessBreaker
                 //TODO: Do not recalculate possible moves again, save it from the prev step.
                 var moves = ClickedPiece.GetAllowedMoves(this);
                 var additionalMoves = ClickedPiece.GetAdditionalMoves(this);
-
-                moves.AddRange(additionalMoves.Select(m => m.Key));
 
                 if (moves.Any(_ => _.y == y && _.x == x))
                 {

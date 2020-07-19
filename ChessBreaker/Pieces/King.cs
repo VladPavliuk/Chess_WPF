@@ -27,6 +27,8 @@ namespace ChessBreaker.Pieces
                 }
             }
 
+            allowedMoves.AddRange(GetAdditionalMoves(board).Select(m => m.Key));
+
             ApplyTransformations(board, ref allowedMoves);
 
             return allowedMoves;
@@ -56,12 +58,11 @@ namespace ChessBreaker.Pieces
                     castleTrack.Add(pieceLocation.x + coeff * i);
                 }
 
-                var castleTrackToCheck = castleTrack.Select(sx => (pieceLocation.y, sx)).ToList();
+                var castleTrackToCheck = castleTrack.Take(2).Select(sx => (pieceLocation.y, sx)).ToList();
 
                 ApplyTransformations(board, ref castleTrackToCheck);
 
-                if (castleTrackToCheck.Count == castleTrack.Count
-                    && castleTrack.All(sx => board.Squares[pieceLocation.y, sx] == null))
+                if (castleTrackToCheck.Count == castleTrack.Take(2).Count() && castleTrack.All(sx => board.Squares[pieceLocation.y, sx] == null))
                 {
                     var rookMoves = new List<((int y, int x), (int y, int x))>()
                     {
