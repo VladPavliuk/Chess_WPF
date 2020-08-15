@@ -1,13 +1,10 @@
-using ChessBreaker.PgnReader;
 using ChessBreaker.Pieces;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ChessBreaker.Tests
@@ -43,18 +40,20 @@ namespace ChessBreaker.Tests
             var playersResBody = JObject.Parse(playersRes.Content.ReadAsStringAsync().Result);
 
             var games = playersResBody["players"]
-                .Take(10)
+                .Take(100)
                 .Aggregate(new List<JToken>(), (acc, player) =>
                 {
                     var playersGamesRes = client.GetAsync($"https://api.chess.com/pub/player/{player}/games/archives").Result;
                     var playersGamesResBody = JObject.Parse(playersGamesRes.Content.ReadAsStringAsync().Result);
 
-                    var playerGames = playersGamesResBody["archives"].Take(10).Select(a =>
+                    var playerGames = playersGamesResBody["archives"].Take(30).Select(a =>
                     {
                         var gamesRes = client.GetAsync(a.ToString()).Result;
                         var gamesResBody = JObject.Parse(gamesRes.Content.ReadAsStringAsync().Result);
 
-                        return gamesResBody["games"].Where(game => game["rules"].ToString().Equals("chess")).Take(30).Select(game => game["pgn"]);
+                        return gamesResBody["games"].Where(game =>
+                            !game["pgn"].ToString().Contains("SetUp") && game["pgn"].ToString().Contains("won by checkmate") && game["rules"].ToString().Equals("chess"))
+                        .Take(30).Select(game => game["pgn"]);
                     });
 
                     acc.AddRange(playerGames.SelectMany(_ => _));
@@ -142,8 +141,6 @@ namespace ChessBreaker.Tests
                 var customLocation = ConvertToCustomLocationFormat(location);
                 var matchedPieces = pieces.Where(piece => piece.GetAllowedMoves(boardState).Any(s => s == customLocation)).ToArray();
 
-                //moves.AddRange(piece.GetAdditionalMoves(boardState).Select(m => m.Key));
-                
                 if (matchedPieces.Length == 1)
                 {
                     selectedPiece = matchedPieces[0];

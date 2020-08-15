@@ -9,34 +9,19 @@ namespace ChessBreaker
     {
         public readonly BasePiece[,] Squares = new BasePiece[8, 8];
 
-        public Player CurrentPlayer
-        {
-            get
-            {
-                return CurrentPlayerInternal;
-            }
-            set
-            {
-                IsEndGameInternal();
-                CurrentPlayerInternal = value;
-            }
-        }
+        public Player CurrentPlayer { get; set; }
 
         public Player OpositePlayer => CurrentPlayer == Player.White ? Player.Black : Player.White;
 
-        public Player? IsCheck { get; set; } = null;
+
+        public Player? IsCheck { get; private set; } = null;
 
         public int RecurtionLevel { get; set; } = 0;
 
-        public bool EndGame => IsCheckmate || IsDraw;
+        public event EventHandler<EndGameArgs> OnEndGame = delegate { };
+        public EndGameResult GameResult { get; private set; }
 
         public Action<BasePiece, List<(int y, int x)>> OnPieceClick = delegate { };
-
-        public Action<Player> CheckmateHandler { get; set; } = delegate { };
-
-        public Action DrawHandler { get; set; } = delegate { };
-
-        private Player CurrentPlayerInternal = Player.White;
 
         public Pawn EnPassantPawn { get; set; }
 
@@ -48,10 +33,6 @@ namespace ChessBreaker
         };
 
         private BasePiece ClickedPiece { get; set; }
-
-        private bool IsCheckmate = false;
-
-        private bool IsDraw = false;
 
         public Pawn PromotionPiece { get; private set; } = null;
 
@@ -82,7 +63,10 @@ namespace ChessBreaker
 
         public void UpdatePieces(int y, int x)
         {
-            if (PromotionPiece != null) return;
+            if (PromotionPiece != null || GameResult != EndGameResult.Undefined)
+            {
+                return;
+            }
 
             if (ClickedPiece == null)
             {
@@ -147,6 +131,18 @@ namespace ChessBreaker
                     }
 
                     SwitchCurrentPlayer();
+
+                    var gameResult = GetGameResult();
+
+                    if (gameResult != EndGameResult.Undefined)
+                    {
+                        GameResult = gameResult;
+
+                        OnEndGame(this, new EndGameArgs()
+                        {
+                            Result = gameResult
+                        });
+                    }
                 }
 
                 ClickedPiece = null;
@@ -209,23 +205,21 @@ namespace ChessBreaker
             return pieces;
         }
 
-        public void IsEndGame()
+        public EndGameResult GetGameResult()
         {
-            if (EndGame)
+            if (!GetPlayerPieces(CurrentPlayer).Any(piece => piece.GetAllowedMoves(this).Any()))
             {
-                if (IsCheckmate)
+                if (IsCheck == CurrentPlayer)
                 {
-                    CheckmateHandler(OpositePlayer);
-                }
-                else if (IsDraw)
-                {
-                    DrawHandler();
+                    return EndGameResult.Checkmate;
                 }
                 else
                 {
-                    throw new Exception("The game ends what it's a checkmate or a draw!");
+                    return EndGameResult.Draw;
                 }
             }
+
+            return EndGameResult.Undefined;
         }
 
         private void SwitchCurrentPlayer()
@@ -280,13 +274,18 @@ namespace ChessBreaker
             {
                 if (IsCheck == OpositePlayer)
                 {
-                    IsCheckmate = true;
+                    GameResult = EndGameResult.Checkmate;
                 }
                 else
                 {
-                    IsDraw = true;
+                    GameResult = EndGameResult.Draw;
                 }
             }
+        }
+
+        public class EndGameArgs
+        {
+            public EndGameResult Result { get; set; }
         }
     }
 }
