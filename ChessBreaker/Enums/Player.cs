@@ -1,4 +1,4 @@
-﻿namespace ChessBreaker
+﻿namespace ChessBreaker.Enums
 {
     public enum Player
     {

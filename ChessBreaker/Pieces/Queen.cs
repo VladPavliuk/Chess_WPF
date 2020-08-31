@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ChessBreaker.Enums;
+using System.Collections.Generic;
 
 namespace ChessBreaker.Pieces
 {

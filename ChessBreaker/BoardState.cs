@@ -1,4 +1,5 @@
-﻿using ChessBreaker.Pieces;
+﻿using ChessBreaker.Enums;
+using ChessBreaker.Pieces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
