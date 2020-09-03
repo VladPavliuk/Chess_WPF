@@ -10,8 +10,6 @@ namespace ChessBreaker.Pieces
 
         public readonly Player ControlledBy;
 
-        public bool AlreadyMoved { get; set; }
-
         public BasePiece(Player controlledBy)
         {
             ControlledBy = controlledBy;

@@ -43,7 +43,7 @@ namespace ChessBreaker.Pieces
                 }
             }
 
-            for (var i = 1; i < (AlreadyMoved ? 2 : 3); i++)
+            for (var i = 1; i < (board.AlreadyMoved.Any(mp => mp == this) ? 2 : 3); i++)
             {
                 if (board.Squares[pieceLocation.y + i * direction, pieceLocation.x] != null)
                 {
@@ -55,7 +55,7 @@ namespace ChessBreaker.Pieces
 
             ApplyTransformations(board, ref allowedMoves);
 
-            allowedMoves.AddRange(GetAdditionalMoves(board).Select(m => m.Key));
+            //allowedMoves.AddRange(GetAdditionalMoves(board).Select(m => m.Key));
 
             return allowedMoves;
         }

@@ -1,7 +1,12 @@
-﻿using ChessBreaker.Pieces;
+﻿using ChessBreaker.Enums;
+using ChessBreaker.Pieces;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -21,6 +26,8 @@ namespace ChessBreaker.WpfClient
         private BoardState Board { get; set; }
 
         private readonly Dictionary<(Type, Player), BitmapImage> PiecesImages = new Dictionary<(Type, Player), BitmapImage>();
+
+        private ((int, int), (int, int)) OptimalMove { get; set; }
 
         public MainWindow()
         {
@@ -46,25 +53,65 @@ namespace ChessBreaker.WpfClient
             InitBoardState();
             DrawBoard();
             DrawPieces();
+
+            Task.Factory.StartNew(() => {
+                while (Board.GameResult == EndGameResult.Undefined)
+                //for (var i = 0; i < 5; i++)
+                {
+                    //Task.Run(() =>
+                    //{
+                    if (Board.PromotionPiece != null)
+                    {
+                        Board.DoPiecePromotion("Q");
+                    }
+
+                    OptimalMove = ChessAI.GetOptimal(Board);
+
+                    Board.UpdatePieces(OptimalMove.Item1.Item1, OptimalMove.Item1.Item2);
+
+                    Board.UpdatePieces(OptimalMove.Item2.Item1, OptimalMove.Item2.Item2);
+
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        DrawBoard();
+                        DrawPieces();
+                    });
+                    Thread.Sleep(0);
+                    //});
+
+                }
+            });
+
+           
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            var clickedPoint = Mouse.GetPosition(CanvasElement);
+           
+            //var clickedPoint = Mouse.GetPosition(CanvasElement);
 
-            var x = (int)(clickedPoint.X * 8 / CanvasElement.Width);
-            var y = (int)(clickedPoint.Y * 8 / CanvasElement.Height);
+            //var x = (int)(clickedPoint.X * 8 / CanvasElement.Width);
+            //var y = (int)(clickedPoint.Y * 8 / CanvasElement.Height);
 
-            DrawBoard();
+            //DrawBoard();
 
-            Board.UpdatePieces(Math.Abs((PlayedAs == Player.White ? 0 : 7) - y), x);
+            //Board.UpdatePieces(Math.Abs((PlayedAs == Player.White ? 0 : 7) - y), x); 
 
-            if (Board.PromotionPiece != null)
-            {
-                Board.DoPiecePromotion("Q");
-            }
+            //if (Board.PromotionPiece != null)
+            //{
+            //    Board.DoPiecePromotion("Q");
+            //}
 
-            DrawPieces();
+            //if (Board.CurrentPlayer == Player.White)
+            //{
+            //    OptimalMove = ChessAI.GetOptimal(Board);
+
+            //    Board.UpdatePieces(OptimalMove.Item1.Item1, OptimalMove.Item1.Item2);
+
+            //    Board.UpdatePieces(OptimalMove.Item2.Item1, OptimalMove.Item2.Item2);
+            //}
+
+            //DrawPieces();
         }
 
         private void InitBoardState()
@@ -74,6 +121,15 @@ namespace ChessBreaker.WpfClient
                 OnPieceClick = (BasePiece clickedPiece, List<(int y, int x)> moves) =>
                 {
                     DrawShadowPieces(clickedPiece, moves);
+                },
+                OnMoveEnd = () =>
+                {
+                    //if (Board.CurrentPlayer == Player.White)
+                    //{
+                    //    var optimalMove = ChessAI.GetOptimal(Board).First();
+
+                    //    OptimalMove = optimalMove.Trace;
+                    //}
                 }
             };
 

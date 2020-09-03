@@ -39,11 +39,11 @@ namespace ChessBreaker.Pieces
         {
             var castleMoves = base.GetAdditionalMoves(board);
 
-            if (AlreadyMoved) return castleMoves;
+            if (board.AlreadyMoved.Any(mp => mp == this)) return castleMoves;
 
             var pieceLocation = board.GetPieceLocation(this);
 
-            var rooks = board.GetPlayerPieces(ControlledBy).Where(p => p is Rook && !p.AlreadyMoved)
+            var rooks = board.GetPlayerPieces(ControlledBy).Where(p => p is Rook && !board.AlreadyMoved.Any(mp => mp == p))
                 .Select(p => new { piece = p, location = board.GetPieceLocation(p) })
                 .Where(p => p.location.y == pieceLocation.y)
                 .ToList();

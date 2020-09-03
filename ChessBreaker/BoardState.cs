@@ -10,6 +10,8 @@ namespace ChessBreaker
     {
         public readonly BasePiece[,] Squares = new BasePiece[8, 8];
 
+        public List<BasePiece> AlreadyMoved = new List<BasePiece>();
+
         public Player CurrentPlayer { get; set; }
 
         public Player OpositePlayer => CurrentPlayer == Player.White ? Player.Black : Player.White;
@@ -20,6 +22,9 @@ namespace ChessBreaker
         public int RecurtionLevel { get; set; } = 0;
 
         public event EventHandler<EndGameArgs> OnEndGame = delegate { };
+
+        public Action OnMoveEnd = delegate { };
+
         public EndGameResult GameResult { get; private set; }
 
         public Action<BasePiece, List<(int y, int x)>> OnPieceClick = delegate { };
@@ -84,9 +89,13 @@ namespace ChessBreaker
                     return;
                 }
 
-                var moves = ClickedPiece.GetAllowedMoves(this);
+                // TODO: Rename moves -> baseMoves
+                //var moves = ClickedPiece.GetAllowedMoves(this);
 
-                OnPieceClick(ClickedPiece, moves);
+                //var additionalMoves = ClickedPiece.GetAdditionalMoves(this);
+                //moves.AddRange(additionalMoves.Select(m => m.Key));
+
+                //OnPieceClick(ClickedPiece, moves);
             }
             else
             {
@@ -99,10 +108,14 @@ namespace ChessBreaker
                 var moves = ClickedPiece.GetAllowedMoves(this);
                 var additionalMoves = ClickedPiece.GetAdditionalMoves(this);
 
+                moves.AddRange(additionalMoves.Select(m => m.Key));
+
                 if (moves.Any(_ => _.y == y && _.x == x))
                 {
                     EnPassantPawn = null;
-                    ClickedPiece.AlreadyMoved = true;
+
+                    AlreadyMoved.Add(ClickedPiece);
+                    //ClickedPiece.AlreadyMoved = true;
 
                     var location = GetPieceLocation(ClickedPiece);
 
@@ -132,7 +145,7 @@ namespace ChessBreaker
                     }
 
                     SwitchCurrentPlayer();
-
+                    OnMoveEnd();
                     var gameResult = GetGameResult();
 
                     if (gameResult != EndGameResult.Undefined)
@@ -166,7 +179,12 @@ namespace ChessBreaker
             return new BoardState(Squares)
             {
                 IsCheck = IsCheck,
-                RecurtionLevel = RecurtionLevel
+                EnPassantPawn = EnPassantPawn,
+                CurrentPlayer = CurrentPlayer,
+                AlreadyMoved = AlreadyMoved.ToList(),
+                ClickedPiece = ClickedPiece,
+                RecurtionLevel = RecurtionLevel,
+                PromotionPiece = PromotionPiece
             };
         }
 
@@ -240,48 +258,39 @@ namespace ChessBreaker
 
         private void InitDefaultChessPieces()
         {
-            Squares[0, 0] = new Rook(Player.Black);
-            Squares[0, 1] = new Knight(Player.Black);
-            Squares[0, 2] = new Bishop(Player.Black);
-            Squares[0, 3] = new Queen(Player.Black);
-            Squares[0, 4] = new King(Player.Black);
-            Squares[0, 5] = new Bishop(Player.Black);
-            Squares[0, 6] = new Knight(Player.Black);
-            Squares[0, 7] = new Rook(Player.Black);
+            Squares[1, 0] = new King(Player.Black);
 
-            for (var i = 0; i < 8; i++)
-            {
-                Squares[1, i] = new Pawn(Player.Black);
-            }
+            Squares[1, 2] = new King(Player.White);
 
-            Squares[7, 0] = new Rook(Player.White);
-            Squares[7, 1] = new Knight(Player.White);
-            Squares[7, 2] = new Bishop(Player.White);
-            Squares[7, 3] = new Queen(Player.White);
-            Squares[7, 4] = new King(Player.White);
-            Squares[7, 5] = new Bishop(Player.White);
-            Squares[7, 6] = new Knight(Player.White);
-            Squares[7, 7] = new Rook(Player.White);
+            Squares[6, 3] = new Rook(Player.White);
 
-            for (var i = 0; i < 8; i++)
-            {
-                Squares[6, i] = new Pawn(Player.White);
-            }
-        }
+            //Squares[0, 0] = new Rook(Player.Black);
+            //Squares[0, 1] = new Knight(Player.Black);
+            //Squares[0, 2] = new Bishop(Player.Black);
+            //Squares[0, 3] = new Queen(Player.Black);
+            //Squares[0, 4] = new King(Player.Black);
+            //Squares[0, 5] = new Bishop(Player.Black);
+            //Squares[0, 6] = new Knight(Player.Black);
+            //Squares[0, 7] = new Rook(Player.Black);
 
-        private void IsEndGameInternal()
-        {
-            if (!GetPlayerPieces(OpositePlayer).Any(piece => piece.GetAllowedMoves(this).Any()))
-            {
-                if (IsCheck == OpositePlayer)
-                {
-                    GameResult = EndGameResult.Checkmate;
-                }
-                else
-                {
-                    GameResult = EndGameResult.Draw;
-                }
-            }
+            //for (var i = 0; i < 8; i++)
+            //{
+            //    Squares[1, i] = new Pawn(Player.Black);
+            //}
+
+            //Squares[7, 0] = new Rook(Player.White);
+            //Squares[7, 1] = new Knight(Player.White);
+            //Squares[7, 2] = new Bishop(Player.White);
+            //Squares[7, 3] = new Queen(Player.White);
+            //Squares[7, 4] = new King(Player.White);
+            //Squares[7, 5] = new Bishop(Player.White);
+            //Squares[7, 6] = new Knight(Player.White);
+            //Squares[7, 7] = new Rook(Player.White);
+
+            //for (var i = 0; i < 8; i++)
+            //{
+            //    Squares[6, i] = new Pawn(Player.White);
+            //}
         }
 
         public class EndGameArgs
