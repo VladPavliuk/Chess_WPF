@@ -16,7 +16,6 @@ namespace ChessBreaker
 
         public Player OpositePlayer => CurrentPlayer == Player.White ? Player.Black : Player.White;
 
-
         public Player? IsCheck { get; private set; } = null;
 
         public int RecurtionLevel { get; set; } = 0;
@@ -258,39 +257,39 @@ namespace ChessBreaker
 
         private void InitDefaultChessPieces()
         {
-            Squares[1, 0] = new King(Player.Black);
+            //Squares[0, 0] = new King(Player.White);
 
-            Squares[1, 2] = new King(Player.White);
+            //Squares[1, 2] = new King(Player.Black);
 
-            Squares[6, 3] = new Rook(Player.White);
+            //Squares[6, 3] = new Rook(Player.Black);
 
-            //Squares[0, 0] = new Rook(Player.Black);
-            //Squares[0, 1] = new Knight(Player.Black);
-            //Squares[0, 2] = new Bishop(Player.Black);
-            //Squares[0, 3] = new Queen(Player.Black);
-            //Squares[0, 4] = new King(Player.Black);
-            //Squares[0, 5] = new Bishop(Player.Black);
-            //Squares[0, 6] = new Knight(Player.Black);
-            //Squares[0, 7] = new Rook(Player.Black);
+            Squares[0, 0] = new Rook(Player.Black);
+            Squares[0, 1] = new Knight(Player.Black);
+            Squares[0, 2] = new Bishop(Player.Black);
+            Squares[0, 3] = new Queen(Player.Black);
+            Squares[0, 4] = new King(Player.Black);
+            Squares[0, 5] = new Bishop(Player.Black);
+            Squares[0, 6] = new Knight(Player.Black);
+            Squares[0, 7] = new Rook(Player.Black);
 
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    Squares[1, i] = new Pawn(Player.Black);
-            //}
+            for (var i = 0; i < 8; i++)
+            {
+                Squares[1, i] = new Pawn(Player.Black);
+            }
 
-            //Squares[7, 0] = new Rook(Player.White);
-            //Squares[7, 1] = new Knight(Player.White);
-            //Squares[7, 2] = new Bishop(Player.White);
-            //Squares[7, 3] = new Queen(Player.White);
-            //Squares[7, 4] = new King(Player.White);
-            //Squares[7, 5] = new Bishop(Player.White);
-            //Squares[7, 6] = new Knight(Player.White);
-            //Squares[7, 7] = new Rook(Player.White);
+            Squares[7, 0] = new Rook(Player.White);
+            Squares[7, 1] = new Knight(Player.White);
+            Squares[7, 2] = new Bishop(Player.White);
+            Squares[7, 3] = new Queen(Player.White);
+            Squares[7, 4] = new King(Player.White);
+            Squares[7, 5] = new Bishop(Player.White);
+            Squares[7, 6] = new Knight(Player.White);
+            Squares[7, 7] = new Rook(Player.White);
 
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    Squares[6, i] = new Pawn(Player.White);
-            //}
+            for (var i = 0; i < 8; i++)
+            {
+                Squares[6, i] = new Pawn(Player.White);
+            }
         }
 
         public class EndGameArgs

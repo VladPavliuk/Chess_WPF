@@ -137,6 +137,12 @@ namespace ChessBreaker.WpfClient
             {
                 var board = (BoardState)obj;
 
+                this.Dispatcher.Invoke(() =>
+                {
+                    DrawBoard();
+                    DrawPieces();
+                });
+
                 switch (args.Result)
                 {
                     case EndGameResult.Checkmate:

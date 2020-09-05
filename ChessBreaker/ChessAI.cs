@@ -10,7 +10,7 @@ namespace ChessBreaker
 {
     public static class ChessAI
     {
-        private const int MaxLevel = 4;
+        private const int MaxLevel = 3;
 
         public static ((int, int), (int, int)) GetOptimal(BoardState state)
         {
@@ -19,9 +19,9 @@ namespace ChessBreaker
                 State = state
             };
 
-            var allStates = PopulateChildStates(stateNode);
+            var bestState = PopulateChildStates(stateNode, player: state.CurrentPlayer);
 
-            return allStates.NextMove;
+            return bestState.NextMove;
         }
 
         static StateNode PopulateChildStates(
@@ -33,7 +33,8 @@ namespace ChessBreaker
         {
             if (recursionLevel <= 0 || stateNode.State.GameResult != EndGameResult.Undefined)
             {
-                stateNode.Value = CalculateStateValue(stateNode.State, stateNode.State.CurrentPlayer);
+                stateNode.BestMoveLevel = stateNode.Level;
+                stateNode.Value = CalculateStateValue(stateNode);
 
                 return stateNode;
             }
@@ -45,7 +46,7 @@ namespace ChessBreaker
 
             Parallel.ForEach(possibleMoves, (move, state) =>
             {
-                var test = PopulateChildStates(new StateNode()
+                var childStates = PopulateChildStates(new StateNode()
                 {
                     Trace = move.Key,
                     State = move.Value,
@@ -55,11 +56,11 @@ namespace ChessBreaker
 
                 if (player == Player.White)
                 {
-                    alpha = Math.Max((float)test.Value, (float)alpha);
+                    alpha = Math.Max((float)childStates.Value, (float)alpha);
                 }
                 else
                 {
-                    beta = Math.Min((float)test.Value, (float)beta);
+                    beta = Math.Min((float)childStates.Value, (float)beta);
                 }
 
                 if (beta <= alpha)
@@ -67,17 +68,27 @@ namespace ChessBreaker
                     state.Break();
                 }
 
-                states.Add(test);
+
+                states.Add(childStates);
             });
 
-            var orderedStates = states.OrderByDescending(s => s.Value).ToList();
+            var groupedStatesByValue = states.GroupBy(s => s.Value).OrderByDescending(g => g.Key);
 
-            var bestMove = player == Player.White
-                ? orderedStates.First()
-                : orderedStates.Last();
+            var bestMovesGroup = player == Player.White
+                ? groupedStatesByValue.First()
+                : groupedStatesByValue.Last();
+
+            var bestMove = bestMovesGroup.OrderBy(s => s.BestMoveLevel).First();
+
+            // For debug
+            stateNode.Children = states;
+            //
 
             stateNode.Value = bestMove.Value;
+            stateNode.BestMoveLevel = stateNode.BestMoveLevel;
             stateNode.NextMove = bestMove.Trace;
+
+            stateNode.BestState = bestMove;
 
             return stateNode;
         }
@@ -99,15 +110,13 @@ namespace ChessBreaker
             })).SelectMany(_ => _).ToList();
         }
 
-        static float CalculateStateValue(BoardState state, Player playedAs)
+        static float CalculateStateValue(StateNode stateNode)
         {
-            //var opositePlayer = playedAs == Player.White ? Player.Black : Player.White;
-
-            Func<Player, float> getPlayerValue = (Player player) =>
+            float getPlayerValue(Player player)
             {
                 var opositePlayer = player == Player.White ? Player.Black : Player.White;
 
-                var pieces = state.GetPlayerPieces(player);
+                var pieces = stateNode.State.GetPlayerPieces(player);
 
                 var queens = pieces.Where(p => p is Queen).Count();
                 var rooks = pieces.Where(p => p is Rook).Count();
@@ -115,11 +124,11 @@ namespace ChessBreaker
                 var knights = pieces.Where(p => p is Knight).Count();
                 var pawns = pieces.Where(p => p is Pawn).Count();
 
-                var check = state.IsCheck == opositePlayer ? 1 : 0;
-                var checkmate = state.GameResult == EndGameResult.Checkmate ? 150 : 1;
+                var check = stateNode.State.IsCheck == opositePlayer ? 1 : 0;
+                var checkmate = stateNode.State.GameResult == EndGameResult.Checkmate ? 150 : 1;
 
                 return checkmate * check + 10 * queens + 5 * rooks + 3 * bishops + 3 * knights + pawns;
-            };
+            }
 
             return getPlayerValue(Player.White) - getPlayerValue(Player.Black);
         }
@@ -133,7 +142,11 @@ namespace ChessBreaker
 
         public int Level { get; set; }
 
+        public int BestMoveLevel { get; set; }
+
         public ConcurrentBag<StateNode> Children { get; set; }
+
+        public StateNode BestState { get; set; }
 
         public StateNode Parent { get; set; }
 
