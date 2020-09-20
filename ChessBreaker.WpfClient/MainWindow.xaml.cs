@@ -31,6 +31,7 @@ namespace ChessBreaker.WpfClient
 
         public MainWindow()
         {
+            ChessNetwork.Test();
             var pieceTypes = new Type[] { typeof(Bishop), typeof(King), typeof(Knight), typeof(Pawn), typeof(Queen), typeof(Rook) };
             var players = new Player[] { Player.White, Player.Black };
 
