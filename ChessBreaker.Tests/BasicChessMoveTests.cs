@@ -16,7 +16,7 @@ namespace ChessBreaker.Tests
         {
             var boardState = new BoardState();
             //Assert.False(boardState.EndGame);
-
+            //ChessNetwork.Test(Board);
             var actualAllowedMoves = boardState.Squares[6, 0].GetAllowedMoves(boardState);
             var expectedAllowedMoves = new List<(int y, int x)>() { (5, 0), (4, 0) };
 
@@ -46,14 +46,14 @@ namespace ChessBreaker.Tests
                     var playersGamesRes = client.GetAsync($"https://api.chess.com/pub/player/{player}/games/archives").Result;
                     var playersGamesResBody = JObject.Parse(playersGamesRes.Content.ReadAsStringAsync().Result);
 
-                    var playerGames = playersGamesResBody["archives"].Take(30).Select(a =>
+                    var playerGames = playersGamesResBody["archives"].Take(3).Select(a =>
                     {
                         var gamesRes = client.GetAsync(a.ToString()).Result;
                         var gamesResBody = JObject.Parse(gamesRes.Content.ReadAsStringAsync().Result);
 
                         return gamesResBody["games"].Where(game =>
                             !game["pgn"].ToString().Contains("SetUp") && game["pgn"].ToString().Contains("won by checkmate") && game["rules"].ToString().Equals("chess"))
-                        .Take(30).Select(game => game["pgn"]);
+                        .Take(3).Select(game => game["pgn"]);
                     });
 
                     acc.AddRange(playerGames.SelectMany(_ => _));

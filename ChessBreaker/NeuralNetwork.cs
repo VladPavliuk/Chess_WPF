@@ -4,6 +4,13 @@ using System.Linq;
 
 namespace ChessBreaker
 {
+    public class NeuralNetworkData
+    {
+        public double[][][] Weights { get; set; }
+
+        public double[][] Bias { get; set; }
+    }
+
     public class NeuralNetwork
     {
         public double[][][] Weights { get; set; }

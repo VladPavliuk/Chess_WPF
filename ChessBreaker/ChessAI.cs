@@ -10,7 +10,7 @@ namespace ChessBreaker
 {
     public static class ChessAI
     {
-        private const int MaxLevel = 3;
+        private const int MaxLevel = 2;
 
         public static ((int, int), (int, int)) GetOptimal(BoardState state)
         {

@@ -1,9 +1,11 @@
 ﻿using ChessBreaker.Enums;
 using ChessBreaker.Pieces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +33,6 @@ namespace ChessBreaker.WpfClient
 
         public MainWindow()
         {
-            ChessNetwork.Test();
             var pieceTypes = new Type[] { typeof(Bishop), typeof(King), typeof(Knight), typeof(Pawn), typeof(Queen), typeof(Rook) };
             var players = new Player[] { Player.White, Player.Black };
 
@@ -54,16 +55,50 @@ namespace ChessBreaker.WpfClient
             InitBoardState();
             DrawBoard();
             DrawPieces();
+            var chessNetwork = new ChessNetwork();
+            var updateFileIterator = 10;
+            var neuralNetworkDataFilePath = "../../../NeuralNetworkData.txt";
 
-            Task.Factory.StartNew(() => {
+            try
+            {
+                var neuralNetworkDataText = File.ReadAllText(neuralNetworkDataFilePath);
+
+                var neuralNetworkData = JsonConvert.DeserializeObject<NeuralNetworkData>(neuralNetworkDataText);
+
+                // Keep in mind these arrays are copied by the reference.
+                chessNetwork.NeuralNetwork.Weights = neuralNetworkData.Weights;
+                chessNetwork.NeuralNetwork.Bias = neuralNetworkData.Bias;
+            }
+            catch (FileNotFoundException)
+            {
+
+            }
+
+            Task.Factory.StartNew(() =>
+            {
                 while (Board.GameResult == EndGameResult.Undefined)
                 //for (var i = 0; i < 5; i++)
                 {
+                    updateFileIterator--;
                     //Task.Run(() =>
                     //{
                     if (Board.PromotionPiece != null)
                     {
                         Board.DoPiecePromotion("Q");
+                    }
+
+                    chessNetwork.ApplyBoard(Board);
+
+                    if (updateFileIterator <= 0)
+                    {
+                        File.WriteAllText(neuralNetworkDataFilePath, JsonConvert.SerializeObject(
+                            new NeuralNetworkData()
+                            {
+                                Weights = chessNetwork.NeuralNetwork.Weights,
+                                Bias = chessNetwork.NeuralNetwork.Bias,
+                            }
+                        ));
+                        updateFileIterator = 10;
                     }
 
                     OptimalMove = ChessAI.GetOptimal(Board);
@@ -83,12 +118,12 @@ namespace ChessBreaker.WpfClient
                 }
             });
 
-           
+
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
-           
+
             //var clickedPoint = Mouse.GetPosition(CanvasElement);
 
             //var x = (int)(clickedPoint.X * 8 / CanvasElement.Width);
